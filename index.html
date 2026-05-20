@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GesDoc — Sistema de Aprobación de Documentos</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans, system-ui); background: #f5f5f3; color: #1a1a18; }
+    :root {
+      --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5; --blue-800: #0C447C; --blue-900: #042C53;
+      --teal-50: #E1F5EE; --teal-600: #0F6E56; --teal-800: #085041;
+      --amber-50: #FAEEDA; --amber-400: #BA7517; --amber-800: #633806;
+      --green-50: #EAF3DE; --green-600: #3B6D11; --green-800: #27500A;
+      --red-50: #FCEBEB; --red-600: #A32D2D; --red-800: #791F1F;
+      --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-600: #5F5E5A; --gray-800: #444441;
+      --purple-50: #EEEDFE; --purple-600: #534AB7; --purple-800: #3C3489;
+    }
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+    .header { background: var(--blue-800); color: white; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; flex-shrink: 0; }
+    .header-title { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .header-user { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--blue-100); }
+    .header-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue-600); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: white; text-transform: uppercase; }
+    .header-logout { font-size: 12px; color: var(--blue-100); cursor: pointer; padding: 4px 8px; border: 0.5px solid rgba(255,255,255,0.3); border-radius: 4px; }
+    .layout { display: flex; flex: 1; min-height: 0; }
+    .sidebar { width: 220px; background: white; border-right: 0.5px solid #e0e0db; padding: 1rem 0; flex-shrink: 0; }
+    .sidebar-section { padding: 0 0.75rem 0.5rem; }
+    .sidebar-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: #888; padding: 0 0.5rem; margin-bottom: 4px; font-weight: 500; }
+    .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 8px 0.75rem; border-radius: 6px; font-size: 13px; cursor: pointer; color: #555; margin-bottom: 2px; }
+    .sidebar-item:hover { background: #f5f5f3; color: #1a1a18; }
+    .sidebar-item.active { background: var(--blue-50); color: var(--blue-800); font-weight: 500; }
+    .sidebar-item .badge { margin-left: auto; background: var(--blue-600); color: white; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+    .main { flex: 1; padding: 1.5rem; overflow-y: auto; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .page-title { font-size: 18px; font-weight: 500; color: #1a1a18; }
+    .page-subtitle { font-size: 13px; color: #666; margin-top: 2px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 0.5px solid #ccc; background: white; color: #1a1a18; transition: all 0.2s; }
+    .btn:hover { background: #f5f5f3; }
+    .btn-primary { background: var(--blue-800); color: white; border-color: var(--blue-800); }
+    .btn-primary:hover { background: var(--blue-900); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+    .stat-card { background: white; border: 0.5px solid #e0e0db; border-radius: 10px; padding: 14px 16px; }
+    .stat-label { font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 500; }
+    .stat-value { font-size: 22px; font-weight: 600; color: #1a1a18; }
+    .grid-dashboard { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+    .card { background: white; border: 0.5px solid #e0e0db; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+    .card-header { padding: 1rem 1.25rem; border-bottom: 0.5px solid #e0e0db; display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 14px; font-weight: 500; color: #1a1a18; display: flex; align-items: center; gap: 6px; }
+    .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .table th { text-align: left; padding: 10px 16px; font-size: 11px; text-transform: uppercase; color: #666; background: #fbfbfa; border-bottom: 0.5px solid #e0e0db; font-weight: 600; }
+    .table td { padding: 12px 16px; border-bottom: 0.5px solid #e0e0db; color: #1a1a18; vertical-align: middle; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 500; text-transform: capitalize; }
+    .badge-blue { background: var(--blue-50); color: var(--blue-800); }
+    .badge-teal { background: var(--teal-50); color: var(--teal-800); }
+    .badge-amber { background: var(--amber-50); color: var(--amber-800); }
+    .badge-green { background: var(--green-50); color: var(--green-800); }
+    .badge-red { background: var(--red-50); color: var(--red-800); }
+    .badge-gray { background: var(--gray-50); color: var(--gray-800); }
+    .type-badge { display: inline-flex; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; text-transform: uppercase; }
+    .type-politica { background: #EEEDFE; color: #3C3489; }
+    .type-norma { background: var(--blue-50); color: var(--blue-800); }
+    .type-manual { background: var(--teal-50); color: var(--teal-800); }
+    .type-procedimiento { background: var(--amber-50); color: var(--amber-800); }
+    .email-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; border: 0.5px solid #ccc; background: white; cursor: pointer; color: var(--blue-600); }
+    .email-btn:hover { background: var(--blue-50); border-color: var(--blue-600); }
+    .email-btn.sent { background: var(--green-50); border-color: var(--green-600); color: var(--green-800); pointer-events: none; }
+    .progress-steps { display: flex; align-items: center; gap: 4px; }
+    .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: #D3D1C7; position: relative; }
+    .progress-dot.done { background: var(--green-600); }
+    .progress-dot.active { background: var(--blue-600); box-shadow: 0 0 0 3px var(--blue-100); }
+    .progress-dot.rejected { background: var(--red-600); }
+    .progress-line { flex: 1; width: 24px; height: 2px; background: #D3D1C7; }
+    .progress-line.done { background: var(--green-600); }
+    .activity-list { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+    .activity-item { display: flex; gap: 12px; font-size: 12px; }
+    .activity-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+    .activity-content { flex: 1; color: #444; }
+    .activity-time { font-size: 10px; color: #888; margin-top: 2px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+    .modal { background: white; border-radius: 12px; width: 500px; max-width: 100%; border: 0.5px solid #e0e0db; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh; }
+    .modal-header { padding: 1.25rem 1.5rem 1rem; border-bottom: 0.5px solid #e0e0db; display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 15px; font-weight: 500; color: #1a1a18; }
+    .modal-body { padding: 1.25rem 1.5rem; overflow-y: auto; }
+    .modal-footer { padding: 1rem 1.5rem; border-top: 0.5px solid #e0e0db; display: flex; justify-content: flex-end; gap: 8px; background: #fbfbfa; border-radius: 0 0 12px 12px; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 12px; font-weight: 500; color: #5F5E5A; margin-bottom: 5px; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 8px 10px; border: 0.5px solid #ccc; border-radius: 8px; font-size: 13px; background: white; color: #1a1a18; font-family: inherit; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--blue-600); outline: none; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--blue-900); color: white; padding: 12px 18px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideUp 0.2s ease; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .hidden { display: none !important; }
+    .revisores-list-setup { display: flex; flex-direction: column; gap: 8px; background: #f5f5f3; padding: 10px; border-radius: 8px; border: 0.5px solid #e0e0db; }
+    .revisor-setup-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-600) 100%); }
+    .login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+    .review-flow-box { background: #fbfbfa; border: 0.5px solid #e0e0db; border-radius: 8px; padding: 12px; margin-top: 10px; }
+    .review-flow-step { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; padding-bottom: 12px; position: relative; }
+    .review-flow-step:not(:last-child)::after { content: ''; position: absolute; left: 13px; top: 24px; bottom: 0; width: 1px; background: #D3D1C7; }
+    .review-flow-step.done:not(:last-child)::after { background: var(--green-600); }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div id="loginPage" class="login-page">
+      <div class="login-card">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <i class="ti ti-file-check" style="font-size: 42px; color: var(--blue-800);"></i>
+          <h2 style="margin-top: 8px; color: var(--blue-800); font-weight: 600;">GesDoc</h2>
+          <p style="font-size: 12px; color: #666;">Control de Calidad y Auditoría Interna</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Usuario / Correo institucional</label>
+          <select class="form-select" id="loginEmail">
+            <option value="admin@empresa.com">Administrador de Control (admin@empresa.com)</option>
+            <option value="santo@empresa.com">Santo Almonte — Gestión de Calidad (santo@empresa.com)</option>
+            <option value="marcos@empresa.com">Marcos Peña — Operaciones (marcos@empresa.com)</option>
+            <option value="clara@empresa.com">Clara Luzón — Legal (clara@empresa.com)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input class="form-input" type="password" id="loginPass" value="admin123" />
+        </div>
+        <button class="btn btn-primary" style="width: 100%; justify-content: center; height: 38px;" onclick="doLogin()">Entrar al Sistema</button>
+        <div style="margin-top: 15px; background: #f5f5f3; padding: 8px; border-radius: 6px; font-size: 11px; color: #555; text-align: center;">
+          <strong>Nota:</strong> Cambia el usuario arriba para simular el inicio de sesión de los revisores en sus turnos.
+        </div>
+      </div>
+    </div>
+
+    <div id="mainApp" class="hidden">
+      <div class="header">
+        <span class="header-title"><i class="ti ti-file-check" style="font-size: 18px;"></i> GesDoc v2.1 — Flujo Unificado</span>
+        <div class="header-user">
+          <span id="headerUserName" style="font-weight: 500;"></span>
+          <div class="header-avatar" id="headerAvatar"></div>
+          <span class="header-logout" onclick="doLogout()">Salir</span>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <div class="sidebar-label font-weight-500">Módulos</div>
+            <div class="sidebar-item active" id="nav-dashboard" onclick="showPage('dashboard')"><i class="ti ti-layout-dashboard"></i> Panel Principal</div>
+            <div class="sidebar-item" id="nav-documentos" onclick="showPage('documentos')"><i class="ti ti-files"></i> Documentos <span class="badge" id="badge-total-docs">0</span></div>
+            <div class="sidebar-item" id="nav-revisiones" onclick="showPage('revisiones')"><i class="ti ti-clipboard-check"></i> Mis Revisiones <span class="badge" style="background:var(--amber-400);" id="badge-my-reviews">0</span></div>
+          </div>
+        </div>
+
+        <div class="main">
+          
+          <div id="page-dashboard">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Panel de Control</h1>
+                <p class="page-subtitle">Monitoreo de flujos, firmas y cumplimiento regulatorio.</p>
+              </div>
+              <button class="btn btn-primary id-admin-only" onclick="openUploadModal()"><i class="ti ti-plus"></i> Nuevo Documento</button>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card"><div class="stat-label">Total en Repositorio</div><div class="stat-value" id="stat-total">0</div></div>
+              <div class="stat-card"><div class="stat-label">En Proceso de Firma</div><div class="stat-value" style="color:var(--blue-600);" id="stat-proceso">0</div></div>
+              <div class="stat-card"><div class="stat-label">Aprobados / Vigentes</div><div class="stat-value" style="color:var(--teal-600);" id="stat-aprobados">0</div></div>
+              <div class="stat-card"><div class="stat-label">Rechazados / Ajustar</div><div class="stat-value" style="color:var(--red-600);" id="stat-rechazados">0</div></div>
+            </div>
+
+            <div class="grid-dashboard">
+              <div class="card">
+                <div class="card-header"><span class="card-title"><i class="ti ti-clock-history"></i> Monitoreo de Estados Recientes</span></div>
+                <table class="table">
+                  <thead>
+                    <tr><th>Documento</th><th>Tipo</th><th>Flujo de Turnos</th><th>Estado</th></tr>
+                  </thead>
+                  <tbody id="dashTableBody"></tbody>
+                </table>
+              </div>
+              <div class="card">
+                <div class="card-header"><span class="card-title"><i class="ti ti-list-details"></i> Actividad del Sistema</span></div>
+                <div class="activity-list" id="activityList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="page-documentos" class="hidden">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Historial de Documentos</h1>
+                <p class="page-subtitle">Registro completo de políticas, manuales y normas cargadas.</p>
+              </div>
+              <button class="btn btn-primary id-admin-only" onclick="openUploadModal()"><i class="ti ti-plus"></i> Nuevo Documento</button>
+            </div>
+            <div class="card">
+              <table class="table">
+                <thead>
+                  <tr><th>Código</th><th>Documento</th><th>Tipo</th><th>Fecha Alta</th><th>Estado Actual</th><th class="id-admin-only">Notificar</th></tr>
+                </thead>
+                <tbody id="docsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="page-revisiones" class="hidden">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Bandeja de Firma y Validación</h1>
+                <p class="page-subtitle">Documentos que se encuentran actualmente esperando por tu decisión.</p>
+              </div>
+            </div>
+            <div id="noReviewsMessage" class="card" style="padding: 2rem; text-align: center; color: #666;">
+              <i class="ti ti-circle-check" style="font-size: 32px; color: var(--teal-600);"></i>
+              <p style="margin-top: 8px; font-size: 14px;">¡Excelente! No tienes documentos pendientes en tu turno de revisión.</p>
+            </div>
+            <div id="reviewsGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="uploadModal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Registrar Documento en Flujo de Turnos</span>
+          <button style="border:none; background:none; cursor:pointer; font-size:18px;" onclick="closeUploadModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Nombre del Documento / Política</label>
+            <input class="form-input" type="text" id="docNombre" placeholder="Ej: Política de Seguridad de Datos" />
+          </div>
+          <div class="grid-dashboard" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0;">
+            <div class="form-group">
+              <label class="form-label">Código Único</label>
+              <input class="form-input" type="text" id="docCodigo" placeholder="ISO-SEC-01" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tipo de Estructura</label>
+              <select class="form-select" id="docTipo">
+                <option value="Política">Política</option>
+                <option value="Manual">Manual</option>
+                <option value="Norma">Norma</option>
+                <option value="Procedimiento">Procedimiento</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción / Objetivo de la carga</label>
+            <textarea class="form-textarea" id="docDescripcion" rows="2" placeholder="Establecer lineamientos obligatorios para el control de accesos..."></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Configuración Secuencial de Revisores (Flujo Obligatorio)</label>
+            <div class="revisores-list-setup">
+              <div class="revisor-setup-row">
+                <span style="font-weight: 600; width: 60px;">Turno 1:</span>
+                <select class="form-select" id="revSelect1">
+                  <option value="2">Santo Almonte (Gestión de Calidad)</option>
+                </select>
+              </div>
+              <div class="revisor-setup-row">
+                <span style="font-weight: 600; width: 60px;">Turno 2:</span>
+                <select class="form-select" id="revSelect2">
+                  <option value="3">Marcos Peña (Operaciones)</option>
+                  <option value="4">Clara Luzón (Legal)</option>
+                </select>
+              </div>
+              <div class="revisor-setup-row">
+                <span style="font-weight: 600; width: 60px;">Turno 3:</span>
+                <select class="form-select" id="revSelect3">
+                  <option value="4">Clara Luzón (Legal)</option>
+                  <option value="3">Marcos Peña (Operaciones)</option>
+                  <option value="none">-- Sin tercer turno --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeUploadModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="subirDocumento()">Iniciar Ciclo de Firmas</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="actionModal" class="modal-overlay hidden">
+      <div class="modal" style="width: 420px;">
+        <div class="modal-header">
+          <span class="modal-title" id="actionModalTitle">Evaluar Documentación</span>
+          <button style="border:none; background:none; cursor:pointer; font-size:18px;" onclick="closeActionModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="actionDocId" />
+          <div class="form-group">
+            <label class="form-label">Comentarios / Observaciones de Auditoría</label>
+            <textarea class="form-textarea" id="actionComentario" rows="3" placeholder="Escribe aquí tus observaciones técnicas o justificación..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Decisión Regulatoria</label>
+            <select class="form-select" id="actionDecision">
+              <option value="aprobado">🟢 Aprobar y Firmar Digitalmente</option>
+              <option value="rechazado">🔴 Rechazar / Solicitar Ajustes Fundados</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeActionModal()">Cerrar</button>
+          <button class="btn btn-primary" onclick="procesarFirmaRevisor()">Aplicar a Cadena</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+      <i class="ti ti-info-circle"></i><span id="toastMsg"></span>
+    </div>
+  </div>
+
+  <script>
+    // USERS DIRECTORY
+    const usuarios = {
+      1: { id: 1, nombre: 'Administrador de Control', email: 'admin@empresa.com', avatar: 'AD', role: 'admin' },
+      2: { id: 2, nombre: 'Santo Almonte', email: 'santo@empresa.com', avatar: 'SA', role: 'revisor' },
+      3: { id: 3, nombre: 'Marcos Peña', email: 'marcos@empresa.com', avatar: 'MP', role: 'revisor' },
+      4: { id: 4, nombre: 'Clara Luzón', email: 'clara@empresa.com', avatar: 'CL', role: 'revisor' }
+    };
+
+    // SYSTEM CENTRAL STATE
+    const state = {
+      documentos: [
+        {
+          id: 1, nombre: 'Manual General de Control Interno v3', tipo: 'Manual', codigo: 'M-AUD-001', descripcion: 'Marco global para las evaluaciones y mitigación de riesgos de fraude.', estado: 'en_revision', fechaCreacion: '2026-05-10', turnoActual: 2,
+          revisores: [
+            { usuarioId: 2, orden: 1, estado: 'aprobado', emailEnviado: true, fechaAprobacion: '2026-05-11', comentario: 'Cumple con los lineamientos globales de la norma.' },
+            { usuarioId: 3, orden: 2, estado: 'pendiente', emailEnviado: true, fechaAprobacion: null, comentario: null },
+            { usuarioId: 4, orden: 3, estado: 'pendiente', emailEnviado: false, fechaAprobacion: null, comentario: null }
+          ]
+        },
+        {
+          id: 2, nombre: 'Política de Prevención de Lavado de Activos', tipo: 'Política', codigo: 'P-AML-155', descripcion: 'Alineación de debida diligencia de acuerdo con la Ley 155-17.', estado: 'aprobado', fechaCreacion: '2026-05-01', turnoActual: 3,
+          revisores: [
+            { usuarioId: 2, orden: 1, estado: 'aprobado', emailEnviado: true, fechaAprobacion: '2026-05-02', comentario: 'Conforme con el cumplimiento legal requerido.' },
+            { usuarioId: 4, orden: 2, estado: 'aprobado', emailEnviado: true, fechaAprobacion: '2026-05-04', comentario: 'Validado por la mesa legal institucional.' }
+          ]
+        }
+      ],
+      actividad: [
+        { texto: 'Santo Almonte firmó "Manual General de Control Interno v3"', tiempo: 'Hace 2 días', icono: 'ti-signature', color: 'var(--teal-600)' },
+        { texto: 'Admin inició flujo para "Manual General de Control Interno v3"', tiempo: 'Hace 3 días', icono: 'ti-cloud-upload', color: 'var(--purple-600)' }
+      ]
+    };
+
+    let nextDocId = 2;
+
+    // LOGIN LOGIC
+    function doLogin() {
+      const email = document.getElementById('loginEmail').value;
+      const pass = document.getElementById('loginPass').value;
+      
+      let userFound = null;
+      for (let id in usuarios) {
+        if(usuarios[id].email === email) { userFound = usuarios[id]; break; }
+      }
+
+      if (userFound && pass === 'admin123') {
+        currentUser = userFound;
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        
+        document.getElementById('headerUserName').textContent = currentUser.nombre;
+        document.getElementById('headerAvatar').textContent = currentUser.avatar;
+        
+        // HIDE OR SHOW ADMIN FEATURES
+        const adminElements = document.querySelectorAll('.id-admin-only');
+        adminElements.forEach(el => {
+          if(currentUser.role === 'admin') el.classList.remove('hidden');
+          else el.classList.add('hidden');
+        });
+
+        showToast(`¡Bienvenido, ${currentUser.nombre}!`);
+        updateBadges();
+        showPage('dashboard');
+      } else {
+        alert('Credenciales incorrectas. Usa la clave genérica admin123');
+      }
+    }
+
+    function doLogout() {
+      currentUser = null;
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('mainApp').classList.add('hidden');
+    }
+
+    // NAVIGATION
+    function showPage(pageId) {
+      ['dashboard', 'documentos', 'revisiones'].forEach(p => {
+        document.getElementById('page-' + p).classList.add('hidden');
+        document.getElementById('nav-' + p).classList.remove('active');
+      });
+      document.getElementById('page-' + pageId).classList.remove('hidden');
+      document.getElementById('nav-' + pageId).classList.add('add', 'active');
+      
+      if (pageId === 'dashboard') renderDashboard();
+      if (pageId === 'documentos') renderDocumentos();
+      if (pageId === 'revisiones') renderRevisiones();
+    }
+
+    // BADGES UPDATE
+    function updateBadges() {
+      document.getElementById('badge-total-docs').textContent = state.documentos.length;
+      
+      let myPendingCount = 0;
+      if (currentUser && currentUser.role === 'revisor') {
+        state.documentos.forEach(d => {
+          if (d.estado === 'en_revision') {
+            const activeRevisor = d.revisores.find(r => r.orden === d.turnoActual);
+            if (activeRevisor && activeRevisor.usuarioId === currentUser.id && activeRevisor.estado === 'pendiente') {
+              myPendingCount++;
+            }
+          }
+        });
+      }
+      document.getElementById('badge-my-reviews').textContent = myPendingCount;
+    }
+
+    // DASHBOARD RENDERING
+    function renderDashboard() {
+      // CALCULATE STATS
+      const total = state.documentos.length;
+      const proceso = state.documentos.filter(d => d.estado === 'en_revision').length;
+      const aprobado = state.documentos.filter(d => d.estado === 'aprobado').length;
+      const rechazado = state.documentos.filter(d => d.estado === 'rechazado').length;
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-proceso').textContent = proceso;
+      document.getElementById('stat-aprobados').textContent = aprobado;
+      document.getElementById('stat-rechazados').textContent = rechazado;
+
+      // TABLE
+      const tbody = document.getElementById('dashTableBody');
+      tbody.innerHTML = state.documentos.map(d => {
+        let badgeStyle = 'badge-blue';
+        if(d.estado === 'aprobado') badgeStyle = 'badge-teal';
+        if(d.estado === 'rechazado') badgeStyle = 'badge-red';
+        if(d.estado === 'pendiente') badgeStyle = 'badge-gray';
+
+        let typeStyle = 'type-norma';
+        if(d.tipo === 'Política') typeStyle = 'type-politica';
+        if(d.tipo === 'Manual') typeStyle = 'type-manual';
+        if(d.tipo === 'Procedimiento') typeStyle = 'type-procedimiento';
+
+        // PROGRESS DOTS FLOW
+        let dotsHtml = '<div class="progress-steps">';
+        d.revisores.forEach((r, idx) => {
+          let dotClass = 'progress-dot';
+          if(r.estado === 'aprobado') dotClass += ' done';
+          else if(r.estado === 'rechazado') dotClass += ' rejected';
+          else if(d.estado === 'en_revision' && d.turnoActual === r.orden) dotClass += ' active';
+
+          dotsHtml += `<div class="${dotClass}" title="${usuarios[r.usuarioId].nombre}"></div>`;
+          if(idx < d.revisores.length - 1) {
+            let lineClass = 'progress-line';
+            if(r.estado === 'aprobado' && d.revisores[idx+1].estado !== 'pendiente') lineClass += ' done';
+            dotsHtml += `<div class="${lineClass}"></div>`;
+          }
+        });
+        dotsHtml += '</div>';
+
+        return `<tr>
+          <td><strong>${d.nombre}</strong><br><small style="color:#666;">${d.codigo}</small></td>
+          <td><span class="type-badge ${typeStyle}">${d.tipo}</span></td>
+          <td>${dotsHtml}</td>
+          <td><span class="badge ${badgeStyle}">${d.estado.replace('_', ' ')}</span></td>
+        </tr>`;
+      }).join('');
+
+      // ACTIVITY LIST
+      document.getElementById('activityList').innerHTML = state.actividad.map(a => `
+        <div class="activity-item">
+          <div class="activity-icon" style="background:${a.color}; color:white;"><i class="ti ${a.icono}"></i></div>
+          <div class="activity-content">
+            <div>${a.texto}</div>
+            <div class="activity-time">${a.tiempo}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // DOCUMENTOS RENDERING
+    function renderDocumentos() {
+      const tbody = document.getElementById('docsTableBody');
+      tbody.innerHTML = state.documentos.map(d => {
+        let badgeStyle = 'badge-blue';
+        if(d.estado === 'aprobado') badgeStyle = 'badge-teal';
+        if(d.estado === 'rechazado') badgeStyle = 'badge-red';
+        if(d.estado === 'pendiente') badgeStyle = 'badge-gray';
+
+        let typeStyle = 'type-norma';
+        if(d.tipo === 'Política') typeStyle = 'type-politica';
+        if(d.tipo === 'Manual') typeStyle = 'type-manual';
+
+        const primerRevisor = d.revisores[0];
+        const emailEnviado = primerRevisor ? primerRevisor.emailEnviado : false;
+
+        let actionBtn = '';
+        if(d.estado === 'pendiente') {
+          actionBtn = `<button class="email-btn" onclick="enviarAlertaInicial(${d.id})" title="Enviar alerta por correo de primer turno"><i class="ti ti-mail"></i></button>`;
+        } else {
+          actionBtn = `<button class="email-btn sent" title="Cadena de notificaciones en curso"><i class="ti ti-mail-opened"></i></button>`;
+        }
+
+        return `<tr>
+          <td><code style="background:#f5f5f3; padding:2px 4px; border-radius:4px;">${d.codigo}</code></td>
+          <td><strong>${d.nombre}</strong><br><small style="color:#666;">${d.descripcion}</small></td>
+          <td><span class="type-badge ${typeStyle}">${d.tipo}</span></td>
+          <td>${d.fechaCreacion}</td>
+          <td><span class="badge ${badgeStyle}">${d.estado.replace('_', ' ')}</span></td>
+          <td class="id-admin-only">${actionBtn}</td>
+        </tr>`;
+      }).join('');
+
+      // HIDDING ADMIN BUTTONS IF REVISOR IS ACTIVE
+      const adminElements = document.querySelectorAll('.id-admin-only');
+      adminElements.forEach(el => {
+        if(currentUser.role === 'admin') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
+    }
+
+    // REVISIONES RENDERING (MY CURRENT TURNS ONLY)
+    function renderRevisiones() {
+      const grid = document.getElementById('reviewsGrid');
+      grid.innerHTML = '';
+      let activeReviews = 0;
+
+      if(currentUser && currentUser.role === 'revisor') {
+        state.documentos.forEach(d => {
+          if(d.estado === 'en_revision') {
+            const currentRev = d.revisores.find(r => r.orden === d.turnoActual);
+            if(currentRev && currentRev.usuarioId === currentUser.id && currentRev.estado === 'pendiente') {
+              activeReviews++;
+              
+              // FLOW CHART HTML
+              let flowChart = '<div class="review-flow-box">';
+              d.revisores.forEach(r => {
+                let statusIcon = '🔴';
+                if(r.estado === 'aprobado') statusIcon = '🟢';
+                if(r.estado === 'pendiente') statusIcon = '🟡';
+                if(d.turnoActual === r.orden && r.estado === 'pendiente') statusIcon = '🔵 (Tu turno)';
+                
+                flowChart += `
+                  <div class="review-flow-step ${r.estado === 'aprobado' ? 'done' : ''}">
+                    <span>${statusIcon} <strong>${usuarios[r.usuarioId].nombre}</strong><br>
+                    <small style="color:#666;">${r.comentario ? `"${r.comentario}"` : 'Esperando validación...'}</small></span>
+                  </div>`;
+              });
+              flowChart += '</div>';
+
+              const card = document.createElement('div');
+              card.className = 'card';
+              card.style.padding = '1.25rem';
+              card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                  <div>
+                    <span class="type-badge type-norma" style="margin-bottom:4px;">${d.tipo}</span>
+                    <h3 style="font-size:15px; font-weight:600;">${d.nombre}</h3>
+                    <small style="color:#666;">Código del Archivo: ${d.codigo}</small>
+                  </div>
+                </div>
+                <p style="font-size:12px; color:#555; margin:8px 0;">${d.descripcion}</p>
+                <div style="font-size:11px; color:#666; margin-bottom:10px;"><strong>Fecha alta:</strong> ${d.fechaCreacion}</div>
+                <strong>Flujo secuencial de revisión:</strong>
+                ${flowChart}
+                <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+                  <button class="btn btn-primary btn-sm" onclick="openActionModal(${d.id})"><i class="ti ti-signature"></i> Evaluar / Firmar</button>
+                </div>
+              `;
+              grid.appendChild(card);
+            }
+          }
+        });
+      }
+
+      if(activeReviews === 0) {
+        document.getElementById('noReviewsMessage').classList.remove('hidden');
+        grid.classList.add('hidden');
+      } else {
+        document.getElementById('noReviewsMessage').classList.add('hidden');
+        grid.classList.remove('hidden');
+      }
+    }
+
+    // ACTION ACTIONS
+    function enviarAlertaInicial(docId) {
+      const doc = state.documentos.find(d => d.id === docId);
+      if(doc) {
+        doc.estado = 'en_revision';
+        doc.revisores[0].emailEnviado = true;
+        const primerRevisorNombre = usuarios[doc.revisores[0].usuarioId].nombre;
+        
+        state.actividad.unshift({
+          texto: `📧 Alerta de Correo enviada a ${primerRevisorNombre} para el Turno 1`,
+          tiempo: 'Ahora', icono: 'ti-mail-forward', color: 'var(--blue-600)'
+        });
+        showToast(`Alerta enviada con éxito al correo de ${primerRevisorNombre}.`);
+        updateBadges();
+        renderDocumentos();
+      }
+    }
+
+    // WORKFLOW MODALS CONTROL
+    function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
+    function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); }
+    
+    function openActionModal(docId) {
+      document.getElementById('actionDocId').value = docId;
+      document.getElementById('actionComentario').value = '';
+      document.getElementById('actionModal').classList.remove('hidden');
+    }
+    function closeActionModal() { document.getElementById('actionModal').classList.add('hidden'); }
+
+    function subirDocumento() {
+      const nombre = document.getElementById('docNombre').value.trim();
+      const codigo = document.getElementById('docCodigo').value.trim();
+      const tipo = document.getElementById('docTipo').value;
+      const desc = document.getElementById('docDescripcion').value.trim();
+
+      if(!nombre || !codigo) { showToast('⚠️ El nombre y el código son campos obligatorios'); return; }
+
+      const revisores = [];
+      revisores.push({ usuarioId: parseInt(document.getElementById('revSelect1').value), orden: 1, estado: 'pendiente', emailEnviado: false, fechaAprobacion: null, comentario: null });
+      revisores.push({ usuarioId: parseInt(document.getElementById('revSelect2').value), orden: 2, estado: 'pendiente', emailEnviado: false, fechaAprobacion: null, comentario: null });
+      
+      const val3 = document.getElementById('revSelect3').value;
+      if(val3 !== 'none') {
+        revisores.push({ usuarioId: parseInt(val3), orden: 3, estado: 'pendiente', emailEnviado: false, fechaAprobacion: null, comentario: null });
+      }
+
+      nextDocId++;
+      state.documentos.push({
+        id: nextDocId, nombre, tipo, codigo, descripcion: desc, estado: 'pendiente', turnoActual: 1, fechaCreacion: new Date().toISOString().split('T')[0], revisores
+      });
+
+      state.actividad.unshift({ texto: `Admin subió "${nombre}" a la cola de firmas`, tiempo: 'Ahora', icono: 'ti-cloud-upload', color: 'var(--purple-600)' });
+      showToast('✅ Documento creado. Dale al sobre de correo para activar las alertas.');
+      
+      // RESET FORM
+      document.getElementById('docNombre').value = '';
+      document.getElementById('docCodigo').value = '';
+      document.getElementById('docDescripcion').value = '';
+      
+      closeUploadModal();
+      updateBadges();
+      showPage('documentos');
+    }
+
+    function procesarFirmaRevisor() {
+      const docId = parseInt(document.getElementById('actionDocId').value);
+      const comentario = document.getElementById('actionComentario').value.trim();
+      const decision = document.getElementById('actionDecision').value;
+
+      const doc = state.documentos.find(d => d.id === docId);
+      if(doc) {
+        const currentRevisor = doc.revisores.find(r => r.orden === doc.turnoActual);
+        
+        currentRevisor.estado = decision;
+        currentRevisor.comentario = comentario || (decision === 'aprobado' ? 'Aprobado sin observaciones' : 'Rechazado para revisión técnica');
+        currentRevisor.fechaAprobacion = new Date().toISOString().split('T')[0];
+
+        if(decision === 'rechazado') {
+          doc.estado = 'rechazado';
+          state.actividad.unshift({ texto: `🔴 ${currentUser.nombre} rechazó "${doc.nombre}"`, tiempo: 'Ahora', icono: 'ti-circle-x', color: 'var(--red-600)' });
+          showToast('❌ Documento devuelto por rechazo.');
+        } else {
+          // LOOK IF THERE IS A NEXT TURNO
+          if(doc.turnoActual < doc.revisores.length) {
+            doc.turnoActual++;
+            doc.revisores[doc.turnoActual - 1].emailEnviado = true; // SIMULATE NEXT EMAIL
+            const proxNombre = usuarios[doc.revisores[doc.turnoActual - 1].usuarioId].nombre;
+            state.actividad.unshift({ texto: `🟢 ${currentUser.nombre} firmó. Turno pasado a ${proxNombre}`, tiempo: 'Ahora', icono: 'ti-arrow-forward', color: 'var(--blue-600)' });
+            showToast(`Firma grabada. Turno cedido a ${proxNombre}`);
+          } else {
+            doc.estado = 'aprobado';
+            state.actividad.unshift({ texto: `🏆 "${doc.nombre}" ha sido plenamente aprobado y publicado`, tiempo: 'Ahora', icono: 'ti-award', color: 'var(--green-600)' });
+            showToast('🎉 ¡Documento completamente aprobado y vigente!');
+          }
+        }
+
+        closeActionModal();
+        updateBadges();
+        showPage('revisiones');
+      }
+    }
+
+    // TOAST CONTROL
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => { t.classList.add('hidden'); }, 3500);
+    }
+
+    // INITIAL LAUNCH
+    renderDashboard(); 
+  </script>
+</body>
+</html>
