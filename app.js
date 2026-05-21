@@ -4,22 +4,28 @@ function showPage(page) {
 
   pages.forEach(p => {
 
-    document.getElementById(`page-${p}`).classList.add("hidden");
+    const pageElement = document.getElementById(`page-${p}`);
+    const navElement = document.getElementById(`nav-${p}`);
 
-    const navItem = document.getElementById(`nav-${p}`);
+    if (pageElement) {
+      pageElement.classList.add("hidden");
+    }
 
-    if (navItem) {
-      navItem.classList.remove("active");
+    if (navElement) {
+      navElement.classList.remove("active");
     }
 
   });
 
-  document.getElementById(`page-${page}`).classList.remove("hidden");
+  const selectedPage = document.getElementById(`page-${page}`);
+  const selectedNav = document.getElementById(`nav-${page}`);
 
-  const activeNav = document.getElementById(`nav-${page}`);
+  if (selectedPage) {
+    selectedPage.classList.remove("hidden");
+  }
 
-  if (activeNav) {
-    activeNav.classList.add("active");
+  if (selectedNav) {
+    selectedNav.classList.add("active");
   }
 
 }
