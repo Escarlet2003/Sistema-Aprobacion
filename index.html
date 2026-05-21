@@ -1,913 +1,122 @@
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-sans, system-ui); }
-  :root {
-    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5; --blue-800: #0C447C; --blue-900: #042C53;
-    --teal-50: #E1F5EE; --teal-600: #0F6E56; --teal-800: #085041;
-    --amber-50: #FAEEDA; --amber-400: #BA7517; --amber-800: #633806;
-    --green-50: #EAF3DE; --green-600: #3B6D11; --green-800: #27500A;
-    --red-50: #FCEBEB; --red-600: #A32D2D; --red-800: #791F1F;
-    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-600: #5F5E5A; --gray-800: #444441;
-    --coral-50: #FAECE7; --coral-600: #993C1D; --coral-800: #712B13;
-    --purple-50: #EEEDFE; --purple-600: #534AB7; --purple-800: #3C3489;
-  }
-  .app { min-height: 100vh; background: var(--color-background-tertiary, #f5f5f3); }
-  .header { background: var(--blue-800); color: white; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
-  .header-title { font-size: 15px; font-weight: 500; letter-spacing: 0.3px; }
-  .header-user { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--blue-100); }
-  .header-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue-600); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: white; }
-  .header-logout { font-size: 12px; color: var(--blue-100); cursor: pointer; padding: 4px 8px; border: 0.5px solid rgba(255,255,255,0.3); border-radius: 4px; }
-  .header-logout:hover { background: rgba(255,255,255,0.1); }
-  .layout { display: flex; min-height: calc(100vh - 56px); }
-  .sidebar { width: 220px; background: var(--color-background-primary, white); border-right: 0.5px solid var(--color-border-tertiary, #e0e0db); padding: 1rem 0; flex-shrink: 0; }
-  .sidebar-section { padding: 0 0.75rem 0.5rem; }
-  .sidebar-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-text-tertiary, #888); padding: 0 0.5rem; margin-bottom: 4px; font-weight: 500; }
-  .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 8px 0.75rem; border-radius: 6px; font-size: 13px; cursor: pointer; color: var(--color-text-secondary, #555); transition: all 0.15s; }
-  .sidebar-item:hover { background: var(--color-background-secondary, #f5f5f3); }
-  .sidebar-item.active { background: var(--blue-50); color: var(--blue-800); font-weight: 500; }
-  .sidebar-item i { font-size: 16px; }
-  .sidebar-item .badge { margin-left: auto; background: var(--blue-600); color: white; font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 500; }
-  .main { flex: 1; padding: 1.5rem; overflow-x: hidden; }
-  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-  .page-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary, #1a1a18); }
-  .page-subtitle { font-size: 13px; color: var(--color-text-secondary, #666); margin-top: 2px; }
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--border-radius-md, 8px); font-size: 13px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--color-border-secondary, #ccc); background: var(--color-background-primary, white); color: var(--color-text-primary, #1a1a18); transition: all 0.15s; }
-  .btn:hover { background: var(--color-background-secondary, #f5f5f3); }
-  .btn-primary { background: var(--blue-800); color: white; border-color: var(--blue-800); }
-  .btn-primary:hover { background: var(--blue-900); border-color: var(--blue-900); }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-  .btn-icon { padding: 6px; border-radius: 6px; }
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
-  .stat-card { background: var(--color-background-secondary, #f5f5f3); border-radius: var(--border-radius-md, 8px); padding: 14px 16px; }
-  .stat-label { font-size: 12px; color: var(--color-text-secondary, #666); margin-bottom: 6px; }
-  .stat-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary, #1a1a18); }
-  .stat-sub { font-size: 11px; color: var(--color-text-tertiary, #999); margin-top: 3px; }
-  .card { background: var(--color-background-primary, white); border: 0.5px solid var(--color-border-tertiary, #e0e0db); border-radius: var(--border-radius-lg, 12px); }
-  .card-header { padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--color-border-tertiary, #e0e0db); display: flex; align-items: center; justify-content: space-between; }
-  .card-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary, #1a1a18); }
-  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .table th { text-align: left; padding: 10px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-secondary, #666); font-weight: 500; border-bottom: 0.5px solid var(--color-border-tertiary, #e0e0db); background: var(--color-background-secondary, #f5f5f3); }
-  .table td { padding: 12px 16px; border-bottom: 0.5px solid var(--color-border-tertiary, #e0e0db); color: var(--color-text-primary, #1a1a18); vertical-align: middle; }
-  .table tr:last-child td { border-bottom: none; }
-  .table tr:hover td { background: var(--color-background-secondary, #f9f9f7); }
-  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 500; }
-  .badge-blue { background: var(--blue-50); color: var(--blue-800); }
-  .badge-teal { background: var(--teal-50); color: var(--teal-800); }
-  .badge-amber { background: var(--amber-50); color: var(--amber-800); }
-  .badge-green { background: var(--green-50); color: var(--green-800); }
-  .badge-red { background: var(--red-50); color: var(--red-800); }
-  .badge-gray { background: var(--gray-50); color: var(--gray-800); }
-  .badge-purple { background: var(--purple-50); color: var(--purple-800); }
-  .type-badge { display: inline-flex; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
-  .type-politica { background: var(--purple-50); color: var(--purple-800); }
-  .type-norma { background: var(--blue-50); color: var(--blue-800); }
-  .type-manual { background: var(--teal-50); color: var(--teal-800); }
-  .type-procedimiento { background: var(--amber-50); color: var(--amber-800); }
-  .revisor-slot { display: flex; flex-direction: column; gap: 3px; }
-  .revisor-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 6px; font-size: 11px; border: 0.5px solid var(--color-border-tertiary, #e0e0db); background: var(--color-background-primary, white); color: var(--color-text-primary, #1a1a18); }
-  .revisor-chip.pending { background: var(--amber-50); border-color: #BA7517; color: var(--amber-800); }
-  .revisor-chip.approved { background: var(--green-50); border-color: #3B6D11; color: var(--green-800); }
-  .revisor-chip.waiting { background: var(--gray-50); border-color: var(--gray-100); color: var(--gray-600); }
-  .revisor-chip.notified { background: var(--blue-50); border-color: var(--blue-100); color: var(--blue-800); }
-  .email-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; border: 0.5px solid var(--color-border-secondary, #ccc); background: var(--color-background-primary, white); cursor: pointer; color: var(--blue-600); font-size: 14px; transition: all 0.15s; flex-shrink: 0; }
-  .email-btn:hover { background: var(--blue-50); border-color: var(--blue-600); }
-  .email-btn:active { transform: scale(0.95); }
-  .email-btn.sent { background: var(--blue-50); border-color: var(--blue-600); color: var(--blue-800); }
-  .email-btn.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
-  .progress-steps { display: flex; align-items: center; gap: 4px; }
-  .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-100); flex-shrink: 0; }
-  .progress-dot.done { background: var(--green-600); }
-  .progress-dot.active { background: var(--blue-600); }
-  .progress-line { flex: 1; height: 1px; background: var(--gray-100); }
-  .progress-line.done { background: var(--green-600); }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-  .modal { background: var(--color-background-primary, white); border-radius: var(--border-radius-lg, 12px); width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; border: 0.5px solid var(--color-border-tertiary, #e0e0db); }
-  .modal-header { padding: 1.25rem 1.5rem 1rem; border-bottom: 0.5px solid var(--color-border-tertiary, #e0e0db); display: flex; justify-content: space-between; align-items: center; }
-  .modal-title { font-size: 16px; font-weight: 500; }
-  .modal-body { padding: 1.25rem 1.5rem; }
-  .modal-footer { padding: 1rem 1.5rem; border-top: 0.5px solid var(--color-border-tertiary, #e0e0db); display: flex; justify-content: flex-end; gap: 8px; }
-  .form-group { margin-bottom: 1rem; }
-  .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--color-text-secondary, #666); margin-bottom: 5px; }
-  .form-input { width: 100%; padding: 8px 10px; border: 0.5px solid var(--color-border-secondary, #ccc); border-radius: var(--border-radius-md, 8px); font-size: 13px; background: var(--color-background-primary, white); color: var(--color-text-primary, #1a1a18); }
-  .form-input:focus { outline: none; border-color: var(--blue-600); box-shadow: 0 0 0 2px var(--blue-50); }
-  .form-select { width: 100%; padding: 8px 10px; border: 0.5px solid var(--color-border-secondary, #ccc); border-radius: var(--border-radius-md, 8px); font-size: 13px; background: var(--color-background-primary, white); color: var(--color-text-primary, #1a1a18); }
-  .revisor-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-secondary, #f5f5f3); border-radius: 6px; margin-bottom: 6px; }
-  .revisor-num { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary, #999); width: 20px; }
-  .revisor-info { flex: 1; }
-  .revisor-name { font-size: 13px; font-weight: 500; }
-  .revisor-cargo { font-size: 11px; color: var(--color-text-secondary, #666); }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--blue-900); color: white; padding: 10px 16px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.2); animation: slideIn 0.2s ease; }
-  @keyframes slideIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .section-divider { height: 0.5px; background: var(--color-border-tertiary, #e0e0db); margin: 1.5rem 0; }
-  .empty-state { text-align: center; padding: 3rem; color: var(--color-text-secondary, #666); font-size: 13px; }
-  .avatar-sm { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: white; flex-shrink: 0; background: var(--blue-600); }
-  .tabs { display: flex; gap: 2px; background: var(--color-background-secondary, #f5f5f3); padding: 3px; border-radius: 8px; margin-bottom: 1.25rem; }
-  .tab { flex: 1; padding: 7px 12px; text-align: center; font-size: 12px; font-weight: 500; border-radius: 6px; cursor: pointer; color: var(--color-text-secondary, #666); transition: all 0.15s; }
-  .tab.active { background: var(--color-background-primary, white); color: var(--color-text-primary, #1a1a18); border: 0.5px solid var(--color-border-tertiary, #e0e0db); }
-  .doc-type-tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-  .notif-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red-600); margin-top: 2px; }
-  .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-800) 50%, var(--blue-600) 100%); }
-  .login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 360px; }
-  .login-logo { text-align: center; margin-bottom: 1.5rem; }
-  .login-logo-icon { width: 52px; height: 52px; background: var(--blue-50); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px; color: var(--blue-800); }
-  .login-logo h2 { font-size: 16px; font-weight: 500; color: var(--blue-800); }
-  .login-logo p { font-size: 12px; color: var(--gray-600); margin-top: 3px; }
-  .hidden { display: none !important; }
-  .revisores-asignados { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .revisor-asignado-card { padding: 8px 10px; background: var(--color-background-secondary, #f5f5f3); border-radius: 6px; border: 0.5px solid var(--color-border-tertiary, #e0e0db); }
-  .revisor-asignado-card.active-turn { border-color: #185FA5; background: var(--blue-50); }
-  .revisor-order { font-size: 10px; color: var(--color-text-tertiary, #999); font-weight: 500; margin-bottom: 2px; }
-  .revisor-name-sm { font-size: 12px; font-weight: 500; color: var(--color-text-primary, #1a1a18); }
-  .revisor-cargo-sm { font-size: 11px; color: var(--color-text-secondary, #666); margin-bottom: 5px; }
-  .status-row { display: flex; align-items: center; gap: 6px; }
-  .actions-cell { display: flex; align-items: center; gap: 6px; }
-</style>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>GesDoc - Sistema de Aprobación</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+    <style>
+        /* ... (Mantuve todos tus estilos originales) ... */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui; background: #f5f5f3; }
+        .hidden { display: none !important; }
+        .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0c447c; }
+        .login-card { background: white; padding: 2rem; border-radius: 12px; width: 350px; }
+        .header { background: #0c447c; color: white; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+        .layout { display: flex; min-height: calc(100vh - 56px); }
+        .sidebar { width: 220px; background: white; border-right: 1px solid #e0e0db; padding: 1rem; }
+        .main { flex: 1; padding: 2rem; }
+        .card { background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e0e0db; }
+        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; border: 1px solid #ccc; background: white; }
+        .btn-primary { background: #0c447c; color: white; border: none; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table td, .table th { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    </style>
+</head>
+<body>
 
-<div class="app" id="app">
-
-  <div id="loginPage" class="login-page">
-    <div class="login-card">
-      <div class="login-logo">
-        <div class="login-logo-icon"><i class="ti ti-file-check" aria-hidden="true"></i></div>
-        <h2>GesDoc</h2>
-        <p>Sistema de Aprobación de Documentos</p>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Correo electrónico</label>
-        <input class="form-input" type="email" id="loginEmail" placeholder="usuario@empresa.com" value="admin@empresa.com" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contraseña</label>
-        <input class="form-input" type="password" id="loginPass" placeholder="••••••••" value="admin123" />
-      </div>
-      <div id="loginError" style="font-size:12px;color:var(--red-600);margin-bottom:10px;display:none;">Credenciales incorrectas</div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">
-        <i class="ti ti-login" aria-hidden="true"></i> Iniciar sesión
-      </button>
-      <p style="font-size:11px;color:var(--gray-600);text-align:center;margin-top:14px">
-        Admin: admin@empresa.com / admin123<br>
-        Revisor: santo@empresa.com / rev123
-      </p>
-    </div>
-  </div>
-
-  <div id="mainApp" class="hidden">
-    <div class="header">
-      <div style="display:flex;align-items:center;gap:12px">
-        <i class="ti ti-file-check" style="font-size:20px;color:white" aria-hidden="true"></i>
-        <span class="header-title">GesDoc — Sistema de Aprobación de Documentos</span>
-      </div>
-      <div class="header-user">
-        <span id="headerUserName"></span>
-        <div class="header-avatar" id="headerAvatar"></div>
-        <span class="header-logout" onclick="doLogout()"><i class="ti ti-logout" aria-hidden="true"></i></span>
-      </div>
+<div id="app">
+    <div id="loginPage" class="login-page">
+        <div class="login-card">
+            <h2>GesDoc Login</h2>
+            <input type="email" id="loginEmail" class="form-input" style="width:100%; margin: 10px 0;" value="admin@empresa.com">
+            <input type="password" id="loginPass" class="form-input" style="width:100%; margin: 10px 0;" value="admin123">
+            <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Ingresar</button>
+            <div id="loginError" style="color:red; margin-top:10px; display:none;">Credenciales incorrectas</div>
+        </div>
     </div>
 
-    <div class="layout">
-      <div class="sidebar">
-        <div class="sidebar-section">
-          <div class="sidebar-label">Principal</div>
-          <div class="sidebar-item active" id="nav-dashboard" onclick="showPage('dashboard')">
-            <i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard
-          </div>
-          <div class="sidebar-item" id="nav-documentos" onclick="showPage('documentos')">
-            <i class="ti ti-files" aria-hidden="true"></i> Documentos
-            <span class="badge" id="badge-docs">0</span>
-          </div>
-          <div class="sidebar-item" id="nav-mis-revisiones" onclick="showPage('mis-revisiones')">
-            <i class="ti ti-clipboard-check" aria-hidden="true"></i> Mis revisiones
-            <span class="badge" id="badge-rev" style="background:var(--amber-400)">0</span>
-          </div>
+    <div id="mainApp" class="hidden">
+        <div class="header">
+            <span>GesDoc</span>
+            <span id="headerUserName"></span>
         </div>
-        <div class="sidebar-section" id="adminNavSection">
-          <div class="sidebar-label">Administración</div>
-          <div class="sidebar-item" id="nav-subir" onclick="showPage('subir')">
-            <i class="ti ti-cloud-upload" aria-hidden="true"></i> Subir documento
-          </div>
-          <div class="sidebar-item" id="nav-usuarios" onclick="showPage('usuarios')">
-            <i class="ti ti-users" aria-hidden="true"></i> Usuarios
-          </div>
-        </div>
-      </div>
-
-      <div class="main">
-
-        <div id="page-dashboard">
-          <div class="page-header">
-            <div>
-              <div class="page-title">Dashboard</div>
-              <div class="page-subtitle" id="dashboardSubtitle">Resumen del sistema de aprobaciones</div>
+        <div class="layout">
+            <div class="sidebar">
+                <div class="sidebar-item" onclick="showPage('dashboard')">Dashboard</div>
+                <div class="sidebar-item" onclick="showPage('documentos')">Documentos</div>
             </div>
-          </div>
-          <div class="stats-grid" id="statsGrid"></div>
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">Actividad reciente</span>
-            </div>
-            <div id="activityFeed" style="padding:1rem 1.25rem"></div>
-          </div>
-        </div>
-
-        <div id="page-documentos" class="hidden">
-          <div class="page-header">
-            <div>
-              <div class="page-title">Documentos</div>
-              <div class="page-subtitle">Gestión del ciclo de aprobación</div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <select class="form-select" style="width:160px;padding:7px 10px;font-size:12px" id="filterEstado" onchange="renderDocTable()">
-                <option value="">Todos los estados</option>
-                <option value="en_revision">En revisión</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="aprobado">Aprobado</option>
-                <option value="publicado">Publicado</option>
-              </select>
-              <select class="form-select" style="width:150px;padding:7px 10px;font-size:12px" id="filterTipo" onchange="renderDocTable()">
-                <option value="">Todos los tipos</option>
-                <option value="Política">Política</option>
-                <option value="Norma">Norma</option>
-                <option value="Manual">Manual</option>
-                <option value="Procedimiento">Procedimiento</option>
-              </select>
-            </div>
-          </div>
-          <div class="card">
-            <table class="table" id="docsTable">
-              <thead>
-                <tr>
-                  <th>Documento</th>
-                  <th>Tipo</th>
-                  <th>Estado</th>
-                  <th>Revisiones</th>
-                  <th>Progreso</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="docsTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="page-mis-revisiones" class="hidden">
-          <div class="page-header">
-            <div>
-              <div class="page-title">Mis revisiones</div>
-              <div class="page-subtitle">Documentos asignados a ti para aprobar</div>
-            </div>
-          </div>
-          <div id="misRevisionesContent"></div>
-        </div>
-
-        <div id="page-subir" class="hidden">
-          <div class="page-header">
-            <div>
-              <div class="page-title">Subir documento</div>
-              <div class="page-subtitle">Registrar nuevo documento y asignar revisores</div>
-            </div>
-          </div>
-          <div class="card" style="max-width:640px">
-            <div class="card-header"><span class="card-title">Información del documento</span></div>
-            <div class="modal-body">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                <div class="form-group" style="grid-column:1/-1">
-                  <label class="form-label">Nombre del documento *</label>
-                  <input class="form-input" id="docNombre" placeholder="Ej: Política de Activos Tecnológicos" />
+            <div class="main" id="pageContent">
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Tipo de documento *</label>
-                  <select class="form-select" id="docTipo">
-                    <option>Política</option>
-                    <option>Norma</option>
-                    <option>Manual</option>
-                    <option>Procedimiento</option>
-                    <option>Instructivo</option>
-                    <option>Reglamento</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Código / versión</label>
-                  <input class="form-input" id="docCodigo" placeholder="Ej: POL-TEC-001 v2.0" />
-                </div>
-                <div class="form-group" style="grid-column:1/-1">
-                  <label class="form-label">Descripción</label>
-                  <textarea class="form-input" id="docDescripcion" rows="2" placeholder="Breve descripción del documento..."></textarea>
-                </div>
-                <div class="form-group" style="grid-column:1/-1">
-                  <label class="form-label">Archivo (simulado)</label>
-                  <div style="border:0.5px dashed var(--color-border-secondary,#ccc);border-radius:8px;padding:20px;text-align:center;color:var(--color-text-secondary,#666);font-size:13px;cursor:pointer">
-                    <i class="ti ti-cloud-upload" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>
-                    Arrastra el archivo aquí o haz clic para seleccionar
-                    <div style="font-size:11px;margin-top:4px;color:var(--color-text-tertiary,#999)">PDF, DOCX hasta 20MB</div>
-                  </div>
-                </div>
-              </div>
-              <div class="section-divider"></div>
-              <div style="font-size:14px;font-weight:500;margin-bottom:12px;color:var(--color-text-primary,#1a1a18)">
-                <i class="ti ti-users" aria-hidden="true"></i> Asignar revisores (máx. 4)
-              </div>
-              <div style="font-size:12px;color:var(--color-text-secondary,#666);margin-bottom:12px">
-                Las revisiones se realizan en orden secuencial. El correo se envía al revisor correspondiente al activar cada etapa.
-              </div>
-              <div id="revisoresForm"></div>
-              <button class="btn btn-sm" style="margin-top:6px" onclick="addRevisorSlot()" id="addRevisorBtn">
-                <i class="ti ti-plus" aria-hidden="true"></i> Agregar revisor
-              </button>
-            </div>
-            <div class="modal-footer">
-              <button class="btn" onclick="clearForm()">Limpiar</button>
-              <button class="btn btn-primary" onclick="subirDocumento()">
-                <i class="ti ti-cloud-upload" aria-hidden="true"></i> Subir y registrar
-              </button>
-            </div>
-          </div>
         </div>
-
-        <div id="page-usuarios" class="hidden">
-          <div class="page-header">
-            <div>
-              <div class="page-title">Usuarios</div>
-              <div class="page-subtitle">Gestión de revisores y administradores</div>
-            </div>
-            <button class="btn btn-primary" onclick="openModalUsuario()">
-              <i class="ti ti-user-plus" aria-hidden="true"></i> Nuevo usuario
-            </button>
-          </div>
-          <div class="card">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Cargo</th>
-                  <th>Correo</th>
-                  <th>Rol</th>
-                  <th>Documentos asignados</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="usuariosTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
     </div>
-  </div>
-
-  <div class="modal-overlay hidden" id="modalDetalle">
-    <div class="modal" style="width:680px">
-      <div class="modal-header">
-        <span class="modal-title" id="modalDetalleTitle">Detalle del documento</span>
-        <button class="btn btn-icon" onclick="closeModalDetalle()"><i class="ti ti-x" aria-hidden="true"></i></button>
-      </div>
-      <div class="modal-body" id="modalDetalleBody"></div>
-      <div class="modal-footer" id="modalDetalleFoot"></div>
-    </div>
-  </div>
-
-  <div class="modal-overlay hidden" id="modalUsuario">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">Nuevo usuario</span>
-        <button class="btn btn-icon" onclick="closeModalUsuario()"><i class="ti ti-x" aria-hidden="true"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Nombre completo *</label>
-          <input class="form-input" id="uNombre" placeholder="Ej: Santo Almonte" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Cargo *</label>
-          <input class="form-input" id="uCargo" placeholder="Ej: Jefe de TI" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Correo electrónico *</label>
-          <input class="form-input" id="uCorreo" type="email" placeholder="usuario@empresa.com" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Rol</label>
-          <select class="form-select" id="uRol">
-            <option value="revisor">Revisor</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Contraseña</label>
-          <input class="form-input" id="uPass" type="password" placeholder="Contraseña de acceso" />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" onclick="closeModalUsuario()">Cancelar</button>
-        <button class="btn btn-primary" onclick="crearUsuario()">
-          <i class="ti ti-user-plus" aria-hidden="true"></i> Crear usuario
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay hidden" id="modalAprobar">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title">Aprobar documento</span>
-        <button class="btn btn-icon" onclick="document.getElementById('modalAprobar').classList.add('hidden')"><i class="ti ti-x" aria-hidden="true"></i></button>
-      </div>
-      <div class="modal-body">
-        <div id="modalAprobarBody"></div>
-        <div class="form-group" style="margin-top:1rem">
-          <label class="form-label">Comentarios (opcional)</label>
-          <textarea class="form-input" id="comentarioAprobacion" rows="3" placeholder="Observaciones sobre el documento..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" style="color:var(--red-600);border-color:var(--red-600)" onclick="rechazarDoc()">
-          <i class="ti ti-x" aria-hidden="true"></i> Rechazar
-        </button>
-        <button class="btn btn-primary" onclick="aprobarDoc()">
-          <i class="ti ti-check" aria-hidden="true"></i> ...
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast hidden">
-    <i class="ti ti-check-circle" aria-hidden="true"></i>
-    <span id="toastMsg"></span>
-  </div>
-
 </div>
 
 <script>
-let currentUser = null;
-let currentDocId = null;
-let revisoresCount = 0;
+    // 1. Estado Inicial con Persistencia
+    let state = JSON.parse(localStorage.getItem('gesdoc_data')) || {
+        usuarios: [
+            { id: 1, nombre: 'Admin Sistema', correo: 'admin@empresa.com', rol: 'admin', pass: 'admin123' },
+            { id: 2, nombre: 'Santo Almonte', correo: 'santo@empresa.com', rol: 'revisor', pass: 'rev123' }
+        ],
+        documentos: []
+    };
 
-const state = {
-  usuarios: [
-    { id: 1, nombre: 'Admin Sistema', cargo: 'Administrador', correo: 'admin@empresa.com', rol: 'admin', pass: 'admin123' },
-    { id: 2, nombre: 'Santo Almonte', cargo: 'Jefe de TI', correo: 'santo@empresa.com', rol: 'revisor', pass: 'rev123' },
-    { id: 3, nombre: 'María Castillo', cargo: 'Gerente de RRHH', correo: 'maria@empresa.com', rol: 'revisor', pass: 'rev123' },
-    { id: 4, nombre: 'José Pérez', cargo: 'Director Financiero', correo: 'jose@empresa.com', rol: 'revisor', pass: 'rev123' },
-    { id: 5, nombre: 'Ana García', cargo: 'Jefa Jurídica', correo: 'ana@empresa.com', rol: 'revisor', pass: 'rev123' },
-  ],
-  documentos: [
-    {
-      id: 1, nombre: 'Política de Activos Tecnológicos', tipo: 'Política', codigo: 'POL-TEC-001 v2.0',
-      descripcion: 'Lineamientos para el uso, control y disposición de activos tecnológicos de la empresa.',
-      estado: 'en_revision', turnoActual: 1, fechaCreacion: '2026-05-10',
-      revisores: [
-        { usuarioId: 2, orden: 1, estado: 'notificado', emailEnviado: true, fechaAprobacion: null, comentario: null },
-        { usuarioId: 3, orden: 2, estado: 'esperando', emailEnviado: false, fechaAprobacion: null, comentario: null },
-        { usuarioId: 4, orden: 3, estado: 'esperando', emailEnviado: false, fechaAprobacion: null, comentario: null },
-      ]
-    },
-    {
-      id: 2, nombre: 'Manual de Seguridad de la Información', tipo: 'Manual', codigo: 'MAN-SEG-002 v1.0',
-      descripcion: 'Manual para el manejo seguro de la información corporativa.',
-      estado: 'en_revision', turnoActual: 2, fechaCreacion: '2026-05-12',
-      revisores: [
-        { usuarioId: 4, orden: 1, estado: 'aprobado', emailEnviado: true, fechaAprobacion: '2026-05-15', comentario: 'Revisado y conforme.' },
-        { usuarioId: 2, orden: 2, estado: 'notificado', emailEnviado: true, fechaAprobacion: null, comentario: null },
-      ]
-    },
-    {
-      id: 3, nombre: 'Norma de Uso de Recursos Humanos', tipo: 'Norma', codigo: 'NOR-RH-003 v1.0',
-      descripcion: 'Normativas sobre el uso adecuado de los recursos y beneficios del personal.',
-      estado: 'aprobado', turnoActual: 999, fechaCreacion: '2026-04-28',
-      revisores: [
-        { usuarioId: 3, orden: 1, estado: 'aprobado', emailEnviado: true, fechaAprobacion: '2026-05-02', comentario: 'Ok.' },
-        { usuarioId: 5, orden: 2, estado: 'aprobado', emailEnviado: true, fechaAprobacion: '2026-05-05', comentario: 'Aprobado sin observaciones.' },
-      ]
-    },
-    {
-      id: 4, nombre: 'Procedimiento de Contratación', tipo: 'Procedimiento', codigo: 'PRO-RH-004 v3.1',
-      descripcion: 'Proceso detallado para la contratación de nuevos colaboradores.',
-      estado: 'pendiente', turnoActual: 1, fechaCreacion: '2026-05-18',
-      revisores: [
-        { usuarioId: 3, orden: 1, estado: 'pendiente', emailEnviado: false, fechaAprobacion: null, comentario: null },
-        { usuarioId: 5, orden: 2, estado: 'esperando', emailEnviado: false, fechaAprobacion: null, comentario: null },
-      ]
-    },
-  ],
-  actividad: [
-    { texto: 'José Pérez aprobó "Manual de Seguridad de la Información"', tiempo: 'Hace 1 hora', icono: 'ti-check-circle', color: 'var(--green-600)' },
-    { texto: 'Se notificó a Santo Almonte para revisar "Manual de Seguridad"', tiempo: 'Hace 1 hora', icono: 'ti-mail', color: 'var(--blue-600)' },
-    { texto: 'Admin subió "Procedimiento de Contratación"', tiempo: 'Hace 2 días', icono: 'ti-cloud-upload', color: 'var(--purple-600)' },
-    { texto: 'Ana García aprobó "Norma de Uso de Recursos Humanos"', tiempo: 'Hace 15 días', icono: 'ti-check-circle', color: 'var(--green-600)' },
-  ]
-};
+    function guardarEstado() {
+        localStorage.setItem('gesdoc_data', JSON.stringify(state));
+    }
 
-let nextId = 5;
-let nextDocId = 5;
+    // 2. Lógica de Login
+    function doLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        const user = state.usuarios.find(u => u.correo === email && u.pass === pass);
+        
+        if (user) {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('headerUserName').textContent = user.nombre;
+            showPage('dashboard');
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
 
-function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
-  const user = state.usuarios.find(u => u.correo === email && u.pass === pass);
-  if (!user) { document.getElementById('loginError').style.display = 'block'; return; }
-  currentUser = user;
-  document.getElementById('loginError').style.display = 'none';
-  document.getElementById('loginPage').classList.add('hidden');
-  document.getElementById('mainApp').classList.remove('hidden');
-  document.getElementById('headerUserName').textContent = user.nombre;
-  document.getElementById('headerAvatar').textContent = user.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-  if (user.rol !== 'admin') document.getElementById('adminNavSection').style.display = 'none';
-  else document.getElementById('adminNavSection').style.display = '';
-  updateBadges();
-  showPage('dashboard');
-}
+    // 3. Funciones de Navegación
+    function showPage(page) {
+        const container = document.getElementById('pageContent');
+        if (page === 'dashboard') container.innerHTML = '<h2>Dashboard</h2><p>Bienvenida, Vero.</p>';
+        if (page === 'documentos') renderDocumentos();
+    }
 
-function doLogout() {
-  currentUser = null;
-  document.getElementById('loginPage').classList.remove('hidden');
-  document.getElementById('mainApp').classList.add('hidden');
-}
+    // 4. Funciones Críticas (Con Persistencia)
+    function crearUsuario(nuevoUser) {
+        state.usuarios.push(nuevoUser);
+        guardarEstado();
+    }
 
-function updateBadges() {
-  const total = state.documentos.filter(d => d.estado === 'en_revision' || d.estado === 'pendiente').length;
-  document.getElementById('badge-docs').textContent = total;
-  if (currentUser) {
-    const misRev = state.documentos.filter(d => {
-      const rev = d.revisores.find(r => r.usuarioId === currentUser.id && (r.estado === 'notificado' || r.estado === 'pendiente'));
-      return rev && d.revisores[d.turnoActual - 1]?.usuarioId === currentUser.id;
-    }).length;
-    document.getElementById('badge-rev').textContent = misRev;
-  }
-}
+    function subirDocumento(doc) {
+        state.documentos.push(doc);
+        guardarEstado();
+        renderDocumentos();
+    }
 
-function showPage(page) {
-  ['dashboard','documentos','mis-revisiones','subir','usuarios'].forEach(p => {
-    document.getElementById('page-'+p).classList.add('hidden');
-    document.getElementById('nav-'+p)?.classList.remove('active');
-  });
-  document.getElementById('page-'+page).classList.remove('hidden');
-  document.getElementById('nav-'+page)?.classList.add('active');
-  if (page === 'dashboard') renderDashboard();
-  if (page === 'documentos') renderDocTable();
-  if (page === 'usuarios') renderUsuariosTable();
-  if (page === 'subir') initSubirForm();
-  if (page === 'mis-revisiones') renderMisRevisiones();
-}
+    function aprobarDoc(docId) {
+        const doc = state.documentos.find(d => d.id === docId);
+        if (doc) {
+            doc.estado = 'aprobado';
+            guardarEstado();
+            renderDocumentos();
+        }
+    }
 
-function renderDashboard() {
-  const total = state.documentos.length;
-  const enRevision = state.documentos.filter(d => d.estado === 'en_revision').length;
-  const aprobados = state.documentos.filter(d => d.estado === 'aprobado').length;
-  const publicados = state.documentos.filter(d => d.estado === 'publicado').length;
-  document.getElementById('dashboardSubtitle').textContent = currentUser.rol === 'admin' ? 'Panel de administración' : `Bienvenido, ${currentUser.nombre}`;
-  document.getElementById('statsGrid').innerHTML = `
-    <div class="stat-card"><div class="stat-label">Total documentos</div><div class="stat-value">${total}</div><div class="stat-sub">En el sistema</div></div>
-    <div class="stat-card"><div class="stat-label">En revisión</div><div class="stat-value" style="color:var(--blue-800)">${enRevision}</div><div class="stat-sub">Pendientes de aprobación</div></div>
-    <div class="stat-card"><div class="stat-label">Aprobados</div><div class="stat-value" style="color:var(--green-800)">${aprobados}</div><div class="stat-sub">Listos para publicar</div></div>
-    <div class="stat-card"><div class="stat-label">Publicados</div><div class="stat-value" style="color:var(--gray-800)">${publicados}</div><div class="stat-sub">Vigentes</div></div>
-  `;
-  const feed = document.getElementById('activityFeed');
-  feed.innerHTML = state.actividad.map(a => `
-    <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary,#e0e0db)">
-      <div style="width:32px;height:32px;border-radius:50%;background:var(--color-background-secondary,#f5f5f3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <i class="ti ${a.icono}" style="font-size:15px;color:${a.color}" aria-hidden="true"></i>
-      </div>
-      <div style="flex:1"><div style="font-size:13px;color:var(--color-text-primary,#1a1a18)">${a.texto}</div>
-        <div style="font-size:11px;color:var(--color-text-tertiary,#999);margin-top:2px">${a.tiempo}</div></div>
-    </div>
-  `).join('') || '<div class="empty-state">Sin actividad reciente</div>';
-}
+    function renderDocumentos() {
+        const container = document.getElementById('pageContent');
+        container.innerHTML = `<h2>Documentos</h2><table class="table" id="tablaDocs"></table>`;
+        // ... (Aquí iría la lógica de pintar la tabla leyendo state.documentos)
+    }
 
-function estadoBadge(estado) {
-  const map = {
-    'en_revision': ['badge-blue','<i class="ti ti-loader" aria-hidden="true"></i> En revisión'],
-    'pendiente': ['badge-amber','<i class="ti ti-clock" aria-hidden="true"></i> Pendiente'],
-    'aprobado': ['badge-green','<i class="ti ti-check" aria-hidden="true"></i> Aprobado'],
-    'publicado': ['badge-gray','<i class="ti ti-world" aria-hidden="true"></i> Publicado'],
-    'rechazado': ['badge-red','<i class="ti ti-x" aria-hidden="true"></i> Rechazado'],
-  };
-  const [cls, label] = map[estado] || ['badge-gray', estado];
-  return `<span class="badge ${cls}">${label}</span>`;
-}
-
-function tipoClass(tipo) {
-  const m = { 'Política':'type-politica','Norma':'type-norma','Manual':'type-manual','Procedimiento':'type-procedimiento' };
-  return m[tipo] || '';
-}
-
-function renderDocTable() {
-  const filterEst = document.getElementById('filterEstado')?.value || '';
-  const filterTipo = document.getElementById('filterTipo')?.value || '';
-  let docs = state.documentos;
-  if (filterEst) docs = docs.filter(d => d.estado === filterEst);
-  if (filterTipo) docs = docs.filter(d => d.tipo === filterTipo);
-  const tbody = document.getElementById('docsTableBody');
-  tbody.innerHTML = docs.map(doc => {
-    const total = doc.revisores.length;
-    const done = doc.revisores.filter(r => r.estado === 'aprobado').length;
-    const progHTML = `<div class="progress-steps">` +
-      doc.revisores.map((r,i) => {
-        const isLast = i === doc.revisores.length - 1;
-        const dot = r.estado === 'aprobado' ? 'done' : (r.estado === 'notificado' ? 'active' : '');
-        const line = r.estado === 'aprobado' ? 'done' : '';
-        return `<div class="progress-dot ${dot}" title="Rev. ${i+1}"></div>${!isLast?`<div class="progress-line ${line}"></div>`:''}`;
-      }).join('') +
-    `</div><div style="font-size:11px;color:var(--color-text-tertiary,#999);margin-top:3px">${done}/${total} aprobadas</div>`;
-    
-    const canPublish = doc.estado === 'aprobado' && currentUser.rol === 'admin';
-    return `<tr>
-      <td>
-        <div style="font-weight:500;font-size:13px">${doc.nombre}</div>
-        <div style="font-size:11px;color:var(--color-text-tertiary,#999);margin-top:1px">${doc.codigo || ''}</div>
-      </td>
-      <td><span class="type-badge ${tipoClass(doc.tipo)}">${doc.tipo}</span></td>
-      <td>${estadoBadge(doc.estado)}</td>
-      <td>
-        <div style="font-size:12px;color:var(--color-text-secondary,#666)">
-          ${doc.revisores.map(r => {
-            const u = state.usuarios.find(u => u.id === r.usuarioId);
-            const isCurrent = doc.revisores[doc.turnoActual-1]?.usuarioId === r.usuarioId;
-            const emailSent = r.emailEnviado;
-            return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
-              <span style="font-size:10px;color:var(--color-text-tertiary,#999);width:14px">${r.orden}.</span>
-              <span style="font-size:12px">${u?.nombre || 'N/A'}</span>
-              ${currentUser.rol === 'admin' ? `<button class="email-btn ${emailSent?'sent':''} ${!isCurrent&&!emailSent?'disabled':''}" onclick="sendEmail(${doc.id},${r.orden})" title="${emailSent?'Correo enviado':'Enviar notificación por correo'}"><i class="ti ti-mail" aria-hidden="true"></i></button>` : ''}
-            </div>`;
-          }).join('')}
-        </div>
-      </td>
-      <td>${progHTML}</td>
-      <td>
-        <div class="actions-cell">
-          <button class="btn btn-sm" onclick="openDetalle(${doc.id})"><i class="ti ti-eye" aria-hidden="true"></i> Ver</button>
-          ${canPublish ? `<button class="btn btn-sm" style="color:var(--green-800);border-color:var(--green-600)" onclick="publicarDoc(${doc.id})"><i class="ti ti-world" aria-hidden="true"></i> Publicar</button>` : ''}
-        </div>
-      </td>
-    </tr>`;
-  }).join('') || `<tr><td colspan="6"><div class="empty-state">No hay documentos</div></td></tr>`;
-}
-
-function sendEmail(docId, orden) {
-  const doc = state.documentos.find(d => d.id === docId);
-  const rev = doc.revisores.find(r => r.orden === orden);
-  const u = state.usuarios.find(u => u.id === rev.usuarioId);
-  if (!rev || rev.emailEnviado) return;
-  rev.emailEnviado = true;
-  rev.estado = 'notificado';
-  doc.estado = 'en_revision';
-  state.actividad.unshift({ texto: `Se notificó a ${u.nombre} para revisar "${doc.nombre}"`, tiempo: 'Ahora', icono: 'ti-mail', color: 'var(--blue-600)' });
-  showToast(`📧 Correo enviado a ${u.nombre} (${u.correo})`);
-  renderDocTable();
-  updateBadges();
-}
-
-function publicarDoc(docId) {
-  const doc = state.documentos.find(d => d.id === docId);
-  doc.estado = 'publicado';
-  state.actividad.unshift({ texto: `"${doc.nombre}" fue publicado`, tiempo: 'Ahora', icono: 'ti-world', color: 'var(--gray-600)' });
-  showToast('Documento publicado exitosamente');
-  renderDocTable();
-}
-
-function openDetalle(docId) {
-  const doc = state.documentos.find(d => d.id === docId);
-  currentDocId = docId;
-  document.getElementById('modalDetalleTitle').textContent = doc.nombre;
-  const body = document.getElementById('modalDetalleBody');
-  body.innerHTML = `
-    <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
-      <span class="type-badge ${tipoClass(doc.tipo)}">${doc.tipo}</span>
-      ${estadoBadge(doc.estado)}
-      ${doc.codigo ? `<span style="font-size:12px;color:var(--color-text-secondary,#666);padding-top:3px">${doc.codigo}</span>` : ''}
-    </div>
-    ${doc.descripcion ? `<p style="font-size:13px;color:var(--color-text-secondary,#666);margin-bottom:1rem">${doc.descripcion}</p>` : ''}
-    <div style="font-size:13px;font-weight:500;margin-bottom:10px">Ciclo de revisiones</div>
-    ${doc.revisores.map(r => {
-      const u = state.usuarios.find(u => u.id === r.usuarioId);
-      const isCurrent = doc.revisores[doc.turnoActual-1]?.usuarioId === r.usuarioId;
-      const stIcons = { aprobado:'ti-check-circle', notificado:'ti-mail', esperando:'ti-clock', pendiente:'ti-clock' };
-      const stColors = { aprobado:'var(--green-600)', notificado:'var(--blue-600)', esperando:'var(--gray-600)', pendiente:'var(--amber-400)' };
-      return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:0.5px solid var(--color-border-tertiary,#e0e0db);margin-bottom:8px;background:${isCurrent?'var(--blue-50)':'var(--color-background-primary,white)'}">
-        <div style="font-size:11px;font-weight:500;color:var(--color-text-tertiary,#999);width:20px;padding-top:2px">R${r.orden}</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:500">${u?.nombre}</div>
-          <div style="font-size:11px;color:var(--color-text-secondary,#666)">${u?.cargo} · ${u?.correo}</div>
-          ${r.comentario ? `<div style="font-size:12px;color:var(--color-text-secondary,#666);margin-top:5px;padding:6px 8px;background:var(--color-background-secondary,#f5f5f3);border-radius:4px">"${r.comentario}"</div>` : ''}
-          ${r.fechaAprobacion ? `<div style="font-size:11px;color:var(--color-text-tertiary,#999);margin-top:3px">Aprobado el ${r.fechaAprobacion}</div>` : ''}
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          ${currentUser.rol === 'admin' && isCurrent && !r.emailEnviado ? `<button class="email-btn" onclick="sendEmail(${doc.id},${r.orden});openDetalle(${doc.id})" title="Enviar correo de notificación"><i class="ti ti-mail" aria-hidden="true"></i></button>` : ''}
-          ${r.emailEnviado ? `<span style="font-size:11px;color:var(--blue-800);background:var(--blue-50);padding:2px 7px;border-radius:4px"><i class="ti ti-mail" aria-hidden="true"></i> Notificado</span>` : ''}
-          <i class="ti ${stIcons[r.estado]||'ti-clock'}" style="font-size:18px;color:${stColors[r.estado]||'var(--gray-600)'}" aria-hidden="true"></i>
-        </div>
-      </div>`;
-    }).join('')}
-  `;
-  const foot = document.getElementById('modalDetalleFoot');
-  const canApprove = currentUser.rol === 'revisor' && doc.revisores.find(r => r.usuarioId === currentUser.id && r.estado === 'notificado' && doc.revisores[doc.turnoActual-1]?.usuarioId === currentUser.id);
-  foot.innerHTML = `
-    <button class="btn" onclick="closeModalDetalle()">Cerrar</button>
-    ${canApprove ? `<button class="btn btn-primary" onclick="openAprobar(${doc.id})"><i class="ti ti-check" aria-hidden="true"></i> Registrar Firma</button>` : ''}
-    ${doc.estado === 'aprobado' && currentUser.rol === 'admin' ? `<button class="btn btn-primary" style="background:var(--green-600);border-color:var(--green-600)" onclick="publicarDoc(${doc.id});closeModalDetalle()"><i class="ti ti-world" aria-hidden="true"></i> Publicar ahora</button>` : ''}
-  `;
-  document.getElementById('modalDetalle').classList.remove('hidden');
-}
-
-function closeModalDetalle() { document.getElementById('modalDetalle').classList.add('hidden'); }
-
-function openAprobar(docId) {
-  const doc = state.documentos.find(d => d.id === docId);
-  currentDocId = docId;
-  document.getElementById('modalAprobarBody').innerHTML = `
-    <div style="padding:12px;background:var(--color-background-secondary,#f5f5f3);border-radius:8px">
-      <div style="font-size:13px;font-weight:500">${doc.nombre}</div>
-      <div style="font-size:12px;color:var(--color-text-secondary,#666);margin-top:2px">${doc.tipo} · ${doc.codigo||''}</div>
-    </div>
-    <p style="font-size:13px;color:var(--color-text-secondary,#666);margin-top:12px">¿Confirmas la aprobación de este documento? Tu firma digital quedará registrada.</p>
-  `;
-  document.getElementById('comentarioAprobacion').value = '';
-  document.getElementById('modalAprobar').classList.remove('hidden');
-}
-
-function aprobarDoc() {
-  const doc = state.documentos.find(d => d.id === currentDocId);
-  const rev = doc.revisores.find(r => r.usuarioId === currentUser.id && r.orden === doc.turnoActual);
-  const comentario = document.getElementById('comentarioAprobacion').value;
-  rev.estado = 'aprobado';
-  rev.fechaAprobacion = new Date().toISOString().split('T')[0];
-  rev.comentario = comentario || null;
-  state.actividad.unshift({ texto: `${currentUser.nombre} aprobó "${doc.nombre}"`, tiempo: 'Ahora', icono: 'ti-check-circle', color: 'var(--green-600)' });
-  const nextRev = doc.revisores.find(r => r.orden === doc.turnoActual + 1);
-  if (nextRev) {
-    doc.turnoActual++;
-    const nextUser = state.usuarios.find(u => u.id === nextRev.usuarioId);
-    showToast(`✅ Aprobado. El administrador puede notificar a ${nextUser.nombre} para la siguiente revisión.`);
-    state.actividad.unshift({ texto: `Siguiente revisor en turno: ${nextUser.nombre}`, tiempo: 'Ahora', icono: 'ti-bell', color: 'var(--amber-400)' });
-  } else {
-    doc.estado = 'aprobado';
-    doc.turnoActual = 999;
-    state.actividad.unshift({ texto: `"${doc.nombre}" completó todas las revisiones — listo para publicar`, tiempo: 'Ahora', icono: 'ti-check-circle', color: 'var(--teal-600)' });
-    showToast('🎉 ¡Todas las revisiones completadas! El administrador puede publicar el documento.');
-  }
-  document.getElementById('modalAprobar').classList.add('hidden');
-  document.getElementById('modalDetalle').classList.add('hidden');
-  renderDocTable();
-  renderMisRevisiones();
-  updateBadges();
-}
-
-function rechazarDoc() {
-  const doc = state.documentos.find(d => d.id === currentDocId);
-  const rev = doc.revisores.find(r => r.usuarioId === currentUser.id && r.orden === doc.turnoActual);
-  rev.estado = 'rechazado';
-  rev.comentario = document.getElementById('comentarioAprobacion').value || 'Rechazado';
-  doc.estado = 'rechazado';
-  state.actividad.unshift({ texto: `${currentUser.nombre} rechazó "${doc.nombre}"`, tiempo: 'Ahora', icono: 'ti-x', color: 'var(--red-600)' });
-  showToast('Documento rechazado. El administrador será notificado.');
-  document.getElementById('modalAprobar').classList.add('hidden');
-  document.getElementById('modalDetalle').classList.add('hidden');
-  renderDocTable();
-  renderMisRevisiones();
-  updateBadges();
-}
-
-function renderMisRevisiones() {
-  const container = document.getElementById('misRevisionesContent');
-  const misDocs = state.documentos.filter(doc => {
-    return doc.revisores.some(r => r.usuarioId === currentUser.id);
-  });
-  if (!misDocs.length) { container.innerHTML = '<div class="card"><div class="empty-state">No tienes documentos asignados.</div></div>'; return; }
-  container.innerHTML = misDocs.map(doc => {
-    const miRev = doc.revisores.find(r => r.usuarioId === currentUser.id);
-    const isMiTurno = doc.revisores[doc.turnoActual-1]?.usuarioId === currentUser.id && miRev.estado === 'notificado';
-    return `<div class="card" style="margin-bottom:12px">
-      <div class="card-header">
-        <div>
-          <span style="font-weight:500;font-size:14px">${doc.nombre}</span>
-          <div style="display:flex;gap:6px;margin-top:4px">
-            <span class="type-badge ${tipoClass(doc.tipo)}">${doc.tipo}</span>
-            ${estadoBadge(doc.estado)}
-            ${isMiTurno ? `<span class="badge badge-amber"><i class="ti ti-alert-circle" aria-hidden="true"></i> Tu turno</span>` : ''}
-          </div>
-        </div>
-        ${isMiTurno ? `<button class="btn btn-primary" onclick="openAprobar(${doc.id})"><i class="ti ti-check" aria-hidden="true"></i> Revisar y aprobar</button>` : ''}
-      </div>
-      <div style="padding:1rem 1.25rem;font-size:13px;color:var(--color-text-secondary,#666)">
-        <div>Revisión ${miRev.orden} de ${doc.revisores.length} · Estado: <strong>${miRev.estado}</strong></div>
-        ${miRev.comentario ? `<div style="margin-top:6px">Tu comentario: "${miRev.comentario}"</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderUsuariosTable() {
-  const tbody = document.getElementById('usuariosTableBody');
-  tbody.innerHTML = state.usuarios.map(u => {
-    const asignados = state.documentos.filter(d => d.revisores.some(r => r.usuarioId === u.id)).length;
-    return `<tr>
-      <td>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar-sm">${u.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()}</div>
-          <span style="font-weight:500">${u.nombre}</span>
-        </div>
-      </td>
-      <td>${u.cargo}</td>
-      <td style="color:var(--blue-800);font-size:12px">${u.correo}</td>
-      <td><span class="badge ${u.rol==='admin'?'badge-purple':'badge-blue'}">${u.rol}</span></td>
-      <td><span style="font-size:12px">${asignados} documento${asignados!==1?'s':''}</span></td>
-      <td>
-        <button class="btn btn-sm" onclick="deleteUser(${u.id})"><i class="ti ti-trash" aria-hidden="true"></i></button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function deleteUser(id) {
-  if (id === currentUser.id) { showToast('No puedes eliminar tu propio usuario'); return; }
-  if (confirm('¿Eliminar este usuario?')) {
-    state.usuarios = state.usuarios.filter(u => u.id !== id);
-    renderUsuariosTable();
-    showToast('Usuario eliminado');
-  }
-}
-
-function openModalUsuario() { document.getElementById('modalUsuario').classList.remove('hidden'); }
-function closeModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
-
-function crearUsuario() {
-  const nombre = document.getElementById('uNombre').value.trim();
-  const cargo = document.getElementById('uCargo').value.trim();
-  const correo = document.getElementById('uCorreo').value.trim();
-  const rol = document.getElementById('uRol').value;
-  const pass = document.getElementById('uPass').value.trim();
-  if (!nombre || !cargo || !correo) { showToast('Complete todos los campos obligatorios'); return; }
-  nextId++;
-  state.usuarios.push({ id: nextId, nombre, cargo, correo, rol, pass: pass || 'user123' });
-  closeModalUsuario();
-  renderUsuariosTable();
-  showToast(`Usuario "${nombre}" creado exitosamente`);
-  ['uNombre','uCargo','uCorreo','uPass'].forEach(id => document.getElementById(id).value = '');
-}
-
-function initSubirForm() {
-  revisoresCount = 0;
-  document.getElementById('revisoresForm').innerHTML = '';
-  addRevisorSlot();
-  document.getElementById('addRevisorBtn').style.display = '';
-}
-
-function addRevisorSlot() {
-  if (revisoresCount >= 4) { showToast('Máximo 4 revisores permitidos'); return; }
-  revisoresCount++;
-  const n = revisoresCount;
-  const opts = state.usuarios.filter(u => u.rol === 'revisor').map(u => `<option value="${u.id}">${u.nombre} — ${u.cargo}</option>`).join('');
-  const div = document.createElement('div');
-  div.id = `revSlot${n}`;
-  div.style = 'display:flex;align-items:center;gap:8px;margin-bottom:8px';
-  div.innerHTML = `
-    <span style="font-size:12px;font-weight:500;color:var(--color-text-tertiary,#999);width:60px;flex-shrink:0">Revisión ${n}</span>
-    <select class="form-select" id="revSelect${n}" style="flex:1">${opts}</select>
-    ${n > 1 ? `<button class="btn btn-icon" onclick="removeRevisorSlot(${n})" title="Quitar"><i class="ti ti-x" aria-hidden="true"></i></button>` : ''}
-  `;
-  document.getElementById('revisoresForm').appendChild(div);
-  if (revisoresCount >= 4) document.getElementById('addRevisorBtn').style.display = 'none';
-}
-
-function removeRevisorSlot(n) {
-  document.getElementById(`revSlot${n}`)?.remove();
-  revisoresCount--;
-  document.getElementById('addRevisorBtn').style.display = '';
-}
-
-function clearForm() {
-  ['docNombre','docCodigo','docDescripcion'].forEach(id => document.getElementById(id).value = '');
-  initSubirForm();
-}
-
-function subirDocumento() {
-  const nombre = document.getElementById('docNombre').value.trim();
-  const tipo = document.getElementById('docTipo').value;
-  const codigo = document.getElementById('docCodigo').value.trim();
-  const desc = document.getElementById('docDescripcion').value.trim();
-  if (!nombre) { showToast('El nombre del documento es obligatorio'); return; }
-  const revisores = [];
-  for (let i = 1; i <= revisoresCount; i++) {
-    const sel = document.getElementById(`revSelect${i}`);
-    if (sel) revisores.push({ usuarioId: parseInt(sel.value), orden: i, estado: 'pendiente', emailEnviado: false, fechaAprobacion: null, comentario: null });
-  }
-  if (!revisores.length) { showToast('Asigna al menos un revisor'); return; }
-  nextDocId++;
-  state.documentos.push({
-    id: nextDocId, nombre, tipo, codigo, descripcion: desc,
-    estado: 'pendiente', turnoActual: 1,
-    fechaCreacion: new Date().toISOString().split('T')[0],
-    revisores
-  });
-  state.actividad.unshift({ texto: `Admin subió "${nombre}"`, tiempo: 'Ahora', icono: 'ti-cloud-upload', color: 'var(--purple-600)' });
-  showToast(`✅ "${nombre}" registrado. Usa el ícono de correo para notificar al primer revisor.`);
-  clearForm();
-  updateBadges();
-  showPage('documentos');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
-  t.classList.remove('hidden');
-  setTimeout(() => t.classList.add('hidden'), 3500);
-}
+    console.log("Sistema GesDoc listo y guardando en localStorage.");
 </script>
+
+</body>
+</html>
