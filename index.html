@@ -1,49 +1,292 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>GesDoc - Sistema de Aprobación</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GesDoc</title>
+
+  <!-- Tabler Icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+  />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-    <div class="app" id="app">
-        <div id="loginPage" class="login-page">
-            <div class="login-card">
-                <h2>GesDoc - Acceso</h2>
-                <div class="form-group">
-                    <label>Correo</label>
-                    <input class="form-input" type="email" id="loginEmail" value="admin@empresa.com">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input class="form-input" type="password" id="loginPass" value="admin123">
-                </div>
-                <div id="loginError" style="color:red; font-size:12px; margin-bottom:10px; display:none;">Credenciales incorrectas</div>
-                <button class="btn btn-primary" onclick="doLogin()">Iniciar sesión</button>
-            </div>
+<div class="app" id="app">
+
+  <!-- LOGIN -->
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">
+          <i class="ti ti-file-check"></i>
         </div>
 
-        <div id="mainApp" class="hidden">
-            <div class="header">
-                <span>GesDoc - Sistema</span>
-                <span id="headerUserName"></span>
-            </div>
-            <div class="layout">
-                <div class="sidebar">
-                    <div class="sidebar-item active" id="nav-dashboard" onclick="showPage('dashboard')">Dashboard</div>
-                </div>
-                <div class="main">
-                    <div id="page-dashboard">
-                        <h2>Dashboard</h2>
-                        <div id="statsGrid"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h2>GesDoc</h2>
+        <p>Sistema de Aprobación de Documentos</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input
+          class="form-input"
+          type="email"
+          id="loginEmail"
+          placeholder="usuario@empresa.com"
+          value="admin@empresa.com"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input
+          class="form-input"
+          type="password"
+          id="loginPass"
+          placeholder="••••••••"
+          value="admin123"
+        />
+      </div>
+
+      <div
+        id="loginError"
+        style="font-size:12px;color:var(--red-600);margin-bottom:10px;display:none;"
+      >
+        Credenciales incorrectas
+      </div>
+
+      <button
+        class="btn btn-primary"
+        style="width:100%;justify-content:center"
+        onclick="doLogin()"
+      >
+        <i class="ti ti-login"></i>
+        Iniciar sesión
+      </button>
+
+      <p
+        style="font-size:11px;color:var(--gray-600);text-align:center;margin-top:14px"
+      >
+        Admin: admin@empresa.com / admin123
+        <br />
+        Revisor: santo@empresa.com / rev123
+      </p>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="mainApp" class="hidden">
+
+    <!-- HEADER -->
+    <div class="header">
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <i class="ti ti-file-check" style="font-size:20px;color:white"></i>
+        <span class="header-title">
+          GesDoc — Sistema de Aprobación de Documentos
+        </span>
+      </div>
+
+      <div class="header-user">
+        <span id="headerUserName"></span>
+
+        <div class="header-avatar" id="headerAvatar"></div>
+
+        <span class="header-logout" onclick="doLogout()">
+          <i class="ti ti-logout"></i>
+        </span>
+      </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- LAYOUT -->
+    <div class="layout">
+
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+
+        <div class="sidebar-section">
+          <div class="sidebar-label">Principal</div>
+
+          <div
+            class="sidebar-item active"
+            id="nav-dashboard"
+            onclick="showPage('dashboard')"
+          >
+            <i class="ti ti-layout-dashboard"></i>
+            Dashboard
+          </div>
+
+          <div
+            class="sidebar-item"
+            id="nav-documentos"
+            onclick="showPage('documentos')"
+          >
+            <i class="ti ti-files"></i>
+            Documentos
+
+            <span class="badge" id="badge-docs">0</span>
+          </div>
+
+          <div
+            class="sidebar-item"
+            id="nav-mis-revisiones"
+            onclick="showPage('mis-revisiones')"
+          >
+            <i class="ti ti-clipboard-check"></i>
+            Mis revisiones
+
+            <span
+              class="badge"
+              id="badge-rev"
+              style="background:var(--amber-400)"
+            >
+              0
+            </span>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="adminNavSection">
+          <div class="sidebar-label">Administración</div>
+
+          <div
+            class="sidebar-item"
+            id="nav-subir"
+            onclick="showPage('subir')"
+          >
+            <i class="ti ti-cloud-upload"></i>
+            Subir documento
+          </div>
+
+          <div
+            class="sidebar-item"
+            id="nav-usuarios"
+            onclick="showPage('usuarios')"
+          >
+            <i class="ti ti-users"></i>
+            Usuarios
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MAIN -->
+      <div class="main">
+
+        <!-- DASHBOARD -->
+        <div id="page-dashboard">
+
+          <div class="page-header">
+            <div>
+              <div class="page-title">Dashboard</div>
+
+              <div class="page-subtitle" id="dashboardSubtitle">
+                Resumen del sistema de aprobaciones
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-grid" id="statsGrid"></div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Actividad reciente</span>
+            </div>
+
+            <div id="activityFeed" style="padding:1rem 1.25rem"></div>
+          </div>
+
+        </div>
+
+        <!-- DOCUMENTOS -->
+        <div id="page-documentos" class="hidden">
+
+          <div class="page-header">
+
+            <div>
+              <div class="page-title">Documentos</div>
+
+              <div class="page-subtitle">
+                Gestión del ciclo de aprobación
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px">
+
+              <select
+                class="form-select"
+                style="width:160px;padding:7px 10px;font-size:12px"
+                id="filterEstado"
+                onchange="renderDocTable()"
+              >
+                <option value="">Todos los estados</option>
+                <option value="en_revision">En revisión</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="aprobado">Aprobado</option>
+                <option value="publicado">Publicado</option>
+              </select>
+
+              <select
+                class="form-select"
+                style="width:150px;padding:7px 10px;font-size:12px"
+                id="filterTipo"
+                onchange="renderDocTable()"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="Política">Política</option>
+                <option value="Norma">Norma</option>
+                <option value="Manual">Manual</option>
+                <option value="Procedimiento">Procedimiento</option>
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="card">
+
+            <table class="table" id="docsTable">
+
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th>Revisiones</th>
+                  <th>Progreso</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody id="docsTableBody"></tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden">
+    <i class="ti ti-check-circle"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+</div>
+
+<!-- JS -->
+<script src="app.js"></script>
+
 </body>
 </html>
