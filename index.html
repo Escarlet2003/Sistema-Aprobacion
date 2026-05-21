@@ -64,4 +64,68 @@
 
       <aside class="sidebar">
 
+  <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')">
+    <i class="ti ti-home"></i>
+    Dashboard
+  </div>
+
+  <div class="nav-item" id="nav-documentos" onclick="showPage('documentos')">
+    <i class="ti ti-file-text"></i>
+    Documentos
+  </div>
+
+  <div class="nav-item" id="nav-usuarios" onclick="showPage('usuarios')">
+    <i class="ti ti-users"></i>
+    Usuarios
+  </div>
+
+</aside>
+
+<main class="content">
+
+  <div id="page-dashboard">
+    <h1>Dashboard</h1>
+  </div>
+
+  <div id="page-documentos" class="hidden">
+    <h1>Documentos</h1>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Documento</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="docsTableBody"></tbody>
+    </table>
+  </div>
+
+  <div id="page-usuarios" class="hidden">
+    <h1>Usuarios</h1>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Cargo</th>
+          <th>Correo</th>
+          <th>Rol</th>
+        </tr>
+      </thead>
+      <tbody id="usuariosTableBody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+</div>
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
+
 </html>
