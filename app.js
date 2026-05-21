@@ -1,234 +1,186 @@
 let currentUser = null;
+let currentDocId = null;
+let revisoresCount = 0;
 
-let state = {
+const state = {
+
   usuarios: [
+
     {
       id: 1,
-      nombre: "Administrador",
-      cargo: "Gerente",
-      correo: "admin@empresa.com",
-      password: "admin123",
-      rol: "Administrador"
+      nombre: 'Admin Sistema',
+      cargo: 'Administrador',
+      correo: 'admin@empresa.com',
+      rol: 'admin',
+      pass: 'admin123'
     },
+
     {
       id: 2,
-      nombre: "María Pérez",
-      cargo: "Analista",
-      correo: "maria@empresa.com",
-      password: "1234",
-      rol: "Usuario"
+      nombre: 'Santo Almonte',
+      cargo: 'Jefe de TI',
+      correo: 'santo@empresa.com',
+      rol: 'revisor',
+      pass: 'rev123'
     }
+
   ],
 
-  documentos: [
-    {
-      id: 1,
-      nombre: "Política de Seguridad",
-      tipo: "PDF",
-      estado: "Aprobado"
-    },
-    {
-      id: 2,
-      nombre: "Procedimiento TI",
-      tipo: "Word",
-      estado: "En revisión"
-    }
-  ]
+  documentos: [],
+
+  actividad: []
+
 };
-
-function saveData() {
-  localStorage.setItem("gesdoc_data", JSON.stringify(state));
-}
-
-function loadData() {
-
-  const data = localStorage.getItem("gesdoc_data");
-
-  if (data) {
-    return JSON.parse(data);
-  }
-
-  return state;
-}
 
 function doLogin() {
 
-  const email = document.getElementById("loginEmail").value;
-  const pass = document.getElementById("loginPass").value;
+  const email =
+    document.getElementById('loginEmail').value.trim();
 
-  const user = state.usuarios.find(u =>
-    u.correo === email &&
-    u.password === pass
+  const pass =
+    document.getElementById('loginPass').value.trim();
+
+  const user = state.usuarios.find(
+    u =>
+      u.correo === email &&
+      u.pass === pass
   );
 
   if (!user) {
 
-    document.getElementById("loginError").style.display = "block";
+    document.getElementById('loginError').style.display = 'block';
 
     return;
   }
 
   currentUser = user;
 
-  document.getElementById("loginError").style.display = "none";
+  document.getElementById('loginError').style.display = 'none';
 
-  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById('loginPage').classList.add('hidden');
 
-  document.getElementById("mainApp").classList.remove("hidden");
+  document.getElementById('mainApp').classList.remove('hidden');
 
-  document.getElementById("headerUserName").innerText =
+  document.getElementById('headerUserName').textContent =
     user.nombre;
 
-  document.getElementById("headerAvatar").innerText =
-    user.nombre.charAt(0).toUpperCase();
+  document.getElementById('headerAvatar').textContent =
+    user.nombre
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0,2)
+      .toUpperCase();
 
-  renderDashboard();
-  renderDocumentos();
-  renderUsuarios();
-
-  showPage("dashboard");
+  showPage('dashboard');
 }
 
 function doLogout() {
 
   currentUser = null;
 
-  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById('loginPage')
+    .classList.remove('hidden');
 
-  document.getElementById("loginPage").classList.remove("hidden");
+  document.getElementById('mainApp')
+    .classList.add('hidden');
 }
 
 function showPage(page) {
 
   const pages = [
-    "dashboard",
-    "documentos",
-    "usuarios"
+    'dashboard',
+    'documentos'
   ];
 
   pages.forEach(p => {
 
-    const pageElement =
-      document.getElementById(`page-${p}`);
+    document
+      .getElementById('page-' + p)
+      ?.classList.add('hidden');
 
-    const navElement =
-      document.getElementById(`nav-${p}`);
-
-    if (pageElement) {
-      pageElement.classList.add("hidden");
-    }
-
-    if (navElement) {
-      navElement.classList.remove("active");
-    }
-
+    document
+      .getElementById('nav-' + p)
+      ?.classList.remove('active');
   });
 
-  const selectedPage =
-    document.getElementById(`page-${page}`);
+  document
+    .getElementById('page-' + page)
+    ?.classList.remove('hidden');
 
-  const selectedNav =
-    document.getElementById(`nav-${page}`);
+  document
+    .getElementById('nav-' + page)
+    ?.classList.add('active');
 
-  if (selectedPage) {
-    selectedPage.classList.remove("hidden");
+  if (page === 'dashboard') {
+    renderDashboard();
   }
 
-  if (selectedNav) {
-    selectedNav.classList.add("active");
+  if (page === 'documentos') {
+    renderDocTable();
   }
-
 }
 
 function renderDashboard() {
 
-  const statsGrid =
-    document.getElementById("statsGrid");
-
-  if (!statsGrid) return;
-
-  const totalDocs = state.documentos.length;
-
-  statsGrid.innerHTML = `
-  
-    <div class="stat-card">
-      <h3>Total documentos</h3>
-      <br>
-      <h1>${totalDocs}</h1>
-    </div>
+  document.getElementById('statsGrid').innerHTML = `
 
     <div class="stat-card">
-      <h3>Usuarios</h3>
-      <br>
-      <h1>${state.usuarios.length}</h1>
+      <div class="stat-label">
+        Total documentos
+      </div>
+
+      <div class="stat-value">
+        ${state.documentos.length}
+      </div>
     </div>
 
-    <div class="stat-card">
-      <h3>Aprobados</h3>
-      <br>
-      <h1>${
-        state.documentos.filter(
-          d => d.estado === "Aprobado"
-        ).length
-      }</h1>
-    </div>
-
-    <div class="stat-card">
-      <h3>En revisión</h3>
-      <br>
-      <h1>${
-        state.documentos.filter(
-          d => d.estado === "En revisión"
-        ).length
-      }</h1>
-    </div>
   `;
 }
 
-function renderDocumentos() {
+function renderDocTable() {
 
   const tbody =
-    document.getElementById("docsTableBody");
+    document.getElementById('docsTableBody');
 
   if (!tbody) return;
 
-  tbody.innerHTML = state.documentos.map(doc => {
+  tbody.innerHTML = state.documentos.map(doc => `
 
-    return `
-      <tr>
-        <td>${doc.nombre}</td>
-        <td>${doc.tipo}</td>
-        <td>${doc.estado}</td>
-      </tr>
-    `;
+    <tr>
 
-  }).join("");
+      <td>${doc.nombre}</td>
+
+      <td>${doc.tipo}</td>
+
+      <td>${doc.estado}</td>
+
+      <td>
+
+        <button
+          class="btn"
+          onclick="openDetalle(${doc.id})"
+        >
+          Ver
+        </button>
+
+      </td>
+
+    </tr>
+
+  `).join('');
 }
 
-function renderUsuarios() {
+function showToast(msg) {
 
-  const tbody =
-    document.getElementById("usuariosTableBody");
+  const toast =
+    document.getElementById('toast');
 
-  if (!tbody) return;
+  document.getElementById('toastMsg').textContent = msg;
 
-  tbody.innerHTML = state.usuarios.map(user => {
+  toast.classList.remove('hidden');
 
-    return `
-      <tr>
-        <td>${user.nombre}</td>
-        <td>${user.cargo}</td>
-        <td>${user.correo}</td>
-        <td>${user.rol}</td>
-      </tr>
-    `;
-
-  }).join("");
+  setTimeout(() => {
+    toast.classList.add('hidden');
+  }, 3500);
 }
-
-window.onload = () => {
-
-  state = loadData();
-
-  console.log("GesDoc cargado correctamente");
-};
