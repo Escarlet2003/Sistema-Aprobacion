@@ -1,69 +1,252 @@
-* {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial, Helvetica, sans-serif;
 }
 
-.sidebar-item:hover {
-  background: #f3f4f6;
+body{
+  background:#f4f7fb;
+  color:#1e293b;
 }
 
-.sidebar-item.active {
-  background: var(--blue-50);
-  color: var(--blue-800);
-  font-weight: bold;
+.hidden{
+  display:none !important;
 }
 
-.main {
-  flex: 1;
-  padding: 24px;
+.app{
+  width:100%;
+  min-height:100vh;
 }
 
-.page-header {
-  margin-bottom: 20px;
+/* LOGIN */
+
+.login-page{
+  width:100%;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#eef2f7;
 }
 
-.page-title {
-  font-size: 24px;
-  margin-bottom: 4px;
+.login-card{
+  width:420px;
+  background:white;
+  padding:40px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
 
-.page-subtitle {
-  color: var(--gray-500);
+.login-logo{
+  text-align:center;
+  margin-bottom:30px;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 16px;
+.login-logo-icon{
+  width:70px;
+  height:70px;
+  background:#2563eb;
+  color:white;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:auto;
+  margin-bottom:15px;
+  font-size:30px;
 }
 
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid var(--gray-100);
+.login-logo h2{
+  margin-bottom:8px;
 }
 
-.card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--gray-100);
+.login-logo p{
+  color:#64748b;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
+.form-group{
+  margin-bottom:20px;
 }
 
-.table th {
-  background: #f9fafb;
-  padding: 14px;
-  text-align: left;
+.form-label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:600;
 }
 
-.table td {
-  padding: 14px;
-  border-top: 1px solid var(--gray-100);
+.form-input{
+  width:100%;
+  padding:12px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  outline:none;
+}
+
+.form-input:focus{
+  border-color:#2563eb;
+}
+
+.login-error{
+  background:#fee2e2;
+  color:#b91c1c;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:20px;
+  display:none;
+}
+
+.btn{
+  border:none;
+  padding:12px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn-primary{
+  background:#2563eb;
+  color:white;
+}
+
+.full{
+  width:100%;
+}
+
+/* MAIN */
+
+.header{
+  height:70px;
+  background:white;
+  border-bottom:1px solid #e2e8f0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 25px;
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:20px;
+  font-weight:700;
+}
+
+.header-user{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.header-avatar{
+  width:40px;
+  height:40px;
+  background:#2563eb;
+  color:white;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
+
+.header-logout{
+  border:none;
+  background:#ef4444;
+  color:white;
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.layout{
+  display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+  width:240px;
+  background:white;
+  min-height:calc(100vh - 70px);
+  border-right:1px solid #e2e8f0;
+  padding:20px;
+}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px;
+  border-radius:12px;
+  cursor:pointer;
+  margin-bottom:10px;
+  transition:0.2s;
+}
+
+.nav-item:hover{
+  background:#eff6ff;
+}
+
+.nav-item.active{
+  background:#2563eb;
+  color:white;
+}
+
+/* CONTENT */
+
+.content{
+  flex:1;
+  padding:30px;
+}
+
+.content h1{
+  margin-bottom:25px;
+}
+
+/* STATS */
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+}
+
+.stat-card{
+  background:white;
+  padding:25px;
+  border-radius:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+.stat-card h3{
+  color:#64748b;
+  margin-bottom:10px;
+}
+
+.stat-card h1{
+  font-size:36px;
+}
+
+/* TABLE */
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.table th{
+  background:#f8fafc;
+  text-align:left;
+  padding:16px;
+}
+
+.table td{
+  padding:16px;
+  border-top:1px solid #e2e8f0;
 }
