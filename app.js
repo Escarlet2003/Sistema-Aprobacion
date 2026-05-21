@@ -1,319 +1,96 @@
-// app.js
-
-let currentUser = null;
-
-/* =========================
-   LOCAL STORAGE
-========================= */
-
-function saveData() {
-  localStorage.setItem("gesdoc_state", JSON.stringify(state));
-}
-
-function loadData() {
-  const saved = localStorage.getItem("gesdoc_state");
-
-  if (saved) {
-    const parsed = JSON.parse(saved);
-
-    state.usuarios = parsed.usuarios || [];
-    state.documentos = parsed.documentos || [];
-    state.actividad = parsed.actividad || [];
-  }
-}
-
-/* =========================
-   STATE
-========================= */
-
-const state = {
-  usuarios: [
-    {
-      id: 1,
-      nombre: "Admin Sistema",
-      cargo: "Administrador",
-      correo: "admin@empresa.com",
-      rol: "admin",
-      pass: "admin123",
-    },
-
-    {
-      id: 2,
-      nombre: "Santo Almonte",
-      cargo: "Gerente de Teclonogía",
-      correo: "santo@empresa.com",
-      rol: "revisor",
-      pass: "rev123",
-    },
-  ],
-
-  documentos: [],
-
-  actividad: [],
-};
-
-/* =========================
-   INIT
-========================= */
-
-loadData();
-
-/* =========================
-   LOGIN
-========================= */
-
-function doLogin() {
-
-  const email =
-    document.getElementById("loginEmail").value.trim();
-
-  const pass =
-    document.getElementById("loginPass").value.trim();
-
-  const user = state.usuarios.find(
-    u => u.correo === email && u.pass === pass
-  );
-
-  if (!user) {
-    document.getElementById("loginError").style.display = "block";
-    return;
-  }
-
-  currentUser = user;
-
-  document.getElementById("loginError").style.display = "none";
-
-  document.getElementById("loginPage")
-    .classList.add("hidden");
-
-  document.getElementById("mainApp")
-    .classList.remove("hidden");
-
-  document.getElementById("headerUserName")
-    .textContent = user.nombre;
-
-  document.getElementById("headerAvatar")
-    .textContent = user.nombre
-      .split(" ")
-      .map(n => n[0])
-      .join("")
-      .substring(0,2)
-      .toUpperCase();
-
-  updateBadges();
-
-  showPage("dashboard");
-}
-
-/* =========================
-   LOGOUT
-========================= */
-
-function doLogout() {
-
-  currentUser = null;
-
-  document.getElementById("loginPage")
-    .classList.remove("hidden");
-
-  document.getElementById("mainApp")
-    .classList.add("hidden");
-}
-
-/* =========================
-   BADGES
-========================= */
-
-function updateBadges() {
-
-  document.getElementById("badge-docs")
-    .textContent = state.documentos.length;
-
-  document.getElementById("badge-rev")
-    .textContent = state.documentos.filter(
-      d => d.estado === "pendiente"
-    ).length;
-}
-
-/* =========================
-   SHOW PAGE
-========================= */
-
 function showPage(page) {
 
-  ["dashboard","documentos"].forEach(p => {
+  const pages = ["dashboard", "documentos", "usuarios"];
 
-    document.getElementById("page-" + p)
-      .classList.add("hidden");
+  pages.forEach(p => {
 
-    document.getElementById("nav-" + p)
-      ?.classList.remove("active");
+    document.getElementById(`page-${p}`).classList.add("hidden");
+
+    const navItem = document.getElementById(`nav-${p}`);
+
+    if (navItem) {
+      navItem.classList.remove("active");
+    }
+
   });
 
-  document.getElementById("page-" + page)
-    .classList.remove("hidden");
+  document.getElementById(`page-${page}`).classList.remove("hidden");
 
-  document.getElementById("nav-" + page)
-    ?.classList.add("active");
+  const activeNav = document.getElementById(`nav-${page}`);
 
-  if (page === "dashboard") {
-    renderDashboard();
+  if (activeNav) {
+    activeNav.classList.add("active");
   }
 
-  if (page === "documentos") {
-    renderDocTable();
-  }
 }
-
-/* =========================
-   DASHBOARD
-========================= */
 
 function renderDashboard() {
+  const totalDocs = state.documentos.length;
 
-  const stats = document.getElementById("statsGrid");
-
-  stats.innerHTML = `
+  document.getElementById("statsGrid").innerHTML = `
     <div class="stat-card">
-      <div class="stat-label">Documentos</div>
-      <div class="stat-value">
-        ${state.documentos.length}
-      </div>
+      <h3>Total documentos</h3>
+      <br>
+      <h1>${totalDocs}</h1>
     </div>
 
     <div class="stat-card">
-      <div class="stat-label">Usuarios</div>
-      <div class="stat-value">
-        ${state.usuarios.length}
-      </div>
+      <h3>Usuarios</h3>
+      <br>
+      <h1>${state.usuarios.length}</h1>
+    </div>
+
+    <div class="stat-card">
+      <h3>Aprobados</h3>
+      <br>
+      <h1>${state.documentos.filter(d => d.estado === 'Aprobado').length}</h1>
+    </div>
+
+    <div class="stat-card">
+      <h3>En revisión</h3>
+      <br>
+      <h1>${state.documentos.filter(d => d.estado === 'En revisión').length}</h1>
     </div>
   `;
-
-  const feed = document.getElementById("activityFeed");
-
-  feed.innerHTML = state.actividad.map(a => `
-    <div style="padding:10px 0;border-bottom:1px solid #eee;">
-      <div style="font-size:13px">
-        ${a.texto}
-      </div>
-
-      <div style="font-size:11px;color:#999;margin-top:4px">
-        ${a.tiempo}
-      </div>
-    </div>
-  `).join("");
 }
 
-/* =========================
-   DOCUMENTOS
-========================= */
+function renderDocumentos() {
 
-function renderDocTable() {
+  const tbody = document.getElementById("docsTableBody");
 
-  const tbody =
-    document.getElementById("docsTableBody");
+  tbody.innerHTML = state.documentos.map(doc => {
 
-  tbody.innerHTML = state.documentos.map(doc => `
+    return `
+      <tr>
+        <td>${doc.nombre}</td>
+        <td>${doc.tipo}</td>
+        <td>${doc.estado}</td>
+      </tr>
+    `;
 
-    <tr>
+  }).join("");
 
-      <td>
-        <strong>${doc.nombre}</strong>
-      </td>
-
-      <td>${doc.tipo}</td>
-
-      <td>${doc.estado}</td>
-
-      <td>${doc.revisores}</td>
-
-      <td>${doc.progreso}%</td>
-
-      <td>
-        <button
-          class="btn"
-          onclick="deleteDocumento(${doc.id})"
-        >
-          Eliminar
-        </button>
-      </td>
-
-    </tr>
-
-  `).join("");
 }
 
-/* =========================
-   DELETE DOCUMENT
-========================= */
+function renderUsuarios() {
 
-function deleteDocumento(id) {
+  const tbody = document.getElementById("usuariosTableBody");
 
-  state.documentos =
-    state.documentos.filter(d => d.id !== id);
+  tbody.innerHTML = state.usuarios.map(user => {
 
-  saveData();
+    return `
+      <tr>
+        <td>${user.nombre}</td>
+        <td>${user.cargo}</td>
+        <td>${user.correo}</td>
+        <td>${user.rol}</td>
+      </tr>
+    `;
 
-  renderDocTable();
+  }).join("");
 
-  updateBadges();
-
-  showToast("Documento eliminado");
 }
 
-/* =========================
-   ADD DOCUMENT
-========================= */
-
-function addDocumento() {
-
-  const nuevo = {
-
-    id: Date.now(),
-
-    nombre: "Nuevo Documento",
-
-    tipo: "Política",
-
-    estado: "Pendiente",
-
-    revisores: 2,
-
-    progreso: 0,
-  };
-
-  state.documentos.push(nuevo);
-
-  state.actividad.unshift({
-    texto: `Se agregó "${nuevo.nombre}"`,
-    tiempo: "Ahora",
-  });
-
-  saveData();
-
-  renderDocTable();
-
-  renderDashboard();
-
-  updateBadges();
-
-  showToast("Documento guardado correctamente");
-}
-
-/* =========================
-   TOAST
-========================= */
-
-function showToast(msg) {
-
-  const t = document.getElementById("toast");
-
-  document.getElementById("toastMsg")
-    .textContent = msg;
-
-  t.classList.remove("hidden");
-
-  setTimeout(() => {
-    t.classList.add("hidden");
-  }, 3000);
-}
+window.onload = () => {
+  state = loadData();
+};
