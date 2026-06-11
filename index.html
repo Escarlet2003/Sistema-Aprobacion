@@ -339,21 +339,33 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Tipo</label>
-        <select class="form-select" id="docTipo">
-          <option>Política</option>
-          <option>Norma</option>
-          <option>Manual</option>
-          <option>Procedimiento</option>
-        </select>
-      </div>
+  <label class="form-label">Tipo</label>
+  <select class="form-select" id="docTipo">
+    <option>Política</option>
+    <option>Norma</option>
+    <option>Manual</option>
+    <option>Procedimiento</option>
+  </select>
+</div>
 
-      <button
-        class="btn btn-primary"
-        onclick="guardarDocumento()"
-      >
-        Guardar documento
-      </button>
+<div class="form-group">
+  <label class="form-label">
+    Adjuntar archivo
+  </label>
+
+  <input
+    type="file"
+    id="docArchivo"
+    class="form-input"
+  >
+</div>
+
+<button
+  class="btn btn-primary"
+  onclick="guardarDocumento()"
+>
+  Guardar documento
+</button>
 
     </div>
   </div>
@@ -374,6 +386,67 @@
 
   <div class="card">
     <div style="padding:20px">
+      <div class="form-group">
+  <label class="form-label">Nombre</label>
+  <input
+    class="form-input"
+    id="nuevoNombre"
+  >
+</div>
+
+<div class="form-group">
+  <label class="form-label">Cargo</label>
+  <input
+    class="form-input"
+    id="nuevoCargo"
+  >
+</div>
+
+<div class="form-group">
+  <label class="form-label">Correo</label>
+  <input
+    class="form-input"
+    id="nuevoCorreo"
+  >
+</div>
+
+<div class="form-group">
+  <label class="form-label">Rol</label>
+
+  <select
+    class="form-select"
+    id="nuevoRol"
+  >
+    <option value="revisor">
+      Revisor
+    </option>
+
+    <option value="admin">
+      Administrador
+    </option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label class="form-label">
+    Contraseña
+  </label>
+
+  <input
+    type="password"
+    class="form-input"
+    id="nuevoPass"
+  >
+</div>
+
+<button
+  class="btn btn-primary"
+  onclick="agregarUsuario()"
+>
+  Agregar usuario
+</button>
+
+<br><br>
       <table class="table">
         <thead>
           <tr>
