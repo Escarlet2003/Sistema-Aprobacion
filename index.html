@@ -298,6 +298,99 @@
 
         </div>
 
+        <!-- MIS REVISIONES -->
+<div id="page-mis-revisiones" class="hidden">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Mis revisiones</div>
+      <div class="page-subtitle">
+        Documentos pendientes de revisión
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="padding:20px">
+      No hay revisiones pendientes
+    </div>
+  </div>
+
+</div>
+
+<!-- SUBIR -->
+<div id="page-subir" class="hidden">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Subir documento</div>
+      <div class="page-subtitle">
+        Registrar nuevo documento
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="padding:20px">
+
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" id="docNombre">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" id="docTipo">
+          <option>Política</option>
+          <option>Norma</option>
+          <option>Manual</option>
+          <option>Procedimiento</option>
+        </select>
+      </div>
+
+      <button
+        class="btn btn-primary"
+        onclick="guardarDocumento()"
+      >
+        Guardar documento
+      </button>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- USUARIOS -->
+<div id="page-usuarios" class="hidden">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Usuarios</div>
+      <div class="page-subtitle">
+        Administración de usuarios
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="padding:20px">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Correo</th>
+            <th>Rol</th>
+          </tr>
+        </thead>
+
+        <tbody id="usuariosBody"></tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
       </div>
     </div>
   </div>

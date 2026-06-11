@@ -90,7 +90,10 @@ function showPage(page) {
 
   const pages = [
     'dashboard',
-    'documentos'
+    'documentos',
+    'mis-revisiones',
+    'subir',
+    'usuarios'
   ];
 
   pages.forEach(p => {
@@ -102,6 +105,7 @@ function showPage(page) {
     document
       .getElementById('nav-' + p)
       ?.classList.remove('active');
+
   });
 
   document
@@ -112,13 +116,18 @@ function showPage(page) {
     .getElementById('nav-' + page)
     ?.classList.add('active');
 
-  if (page === 'dashboard') {
+  if(page === 'dashboard'){
     renderDashboard();
   }
 
-  if (page === 'documentos') {
+  if(page === 'documentos'){
     renderDocTable();
   }
+
+  if(page === 'usuarios'){
+    renderUsuarios();
+  }
+
 }
 
 function renderDashboard() {
@@ -183,4 +192,61 @@ function showToast(msg) {
   setTimeout(() => {
     toast.classList.add('hidden');
   }, 3500);
+}
+function renderUsuarios(){
+
+  const tbody =
+    document.getElementById('usuariosBody');
+
+  if(!tbody) return;
+
+  tbody.innerHTML = state.usuarios.map(user => `
+
+    <tr>
+
+      <td>${user.nombre}</td>
+
+      <td>${user.cargo}</td>
+
+      <td>${user.correo}</td>
+
+      <td>${user.rol}</td>
+
+    </tr>
+
+  `).join('');
+
+}
+
+function guardarDocumento(){
+
+  const nombre =
+    document.getElementById('docNombre').value;
+
+  const tipo =
+    document.getElementById('docTipo').value;
+
+  if(!nombre){
+
+    showToast('Debe indicar el nombre');
+
+    return;
+  }
+
+  state.documentos.push({
+
+    id: Date.now(),
+
+    nombre,
+
+    tipo,
+
+    estado: 'Pendiente'
+
+  });
+
+  showToast('Documento registrado');
+
+  renderDashboard();
+
 }
